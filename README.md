@@ -1,2 +1,2 @@
 # vmSwipe
-## jQuery plugin for swipe bloks
+## jQuery plugin for swipe blocks
