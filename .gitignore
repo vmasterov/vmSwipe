@@ -1,0 +1,7 @@
+# Others #
+###################
+/.idea
+/node_modules
+todo.txt
+
+/dev
