@@ -14,7 +14,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "SET NODE_ENV=development&&gulp serve",
-    "prod": "SET NODE_ENV=productiont&&gulp serve"
+    "dist": "SET NODE_ENV=productiont&&gulp serve"
   },
   "repository": {
     "type": "git",
