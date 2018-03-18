@@ -6,20 +6,34 @@
   overflow: hidden;
   background-color: #d8e6ec; }
 
-.color-block {
+.th01 {
+  background-color: #2e93ba; }
+
+.th02 {
+  background-color: #42BA6C; }
+
+.th03 {
+  background-color: #BA9237; }
+
+.double-width.block {
+  width: 1000px; }
+
+.block {
   margin-right: 10px;
   width: 500px;
   height: 250px;
-  background-color: #2e93ba;
   text-align: center; }
 
-.color-block span {
+.block span {
   color: #fff;
   font-size: 32px;
   line-height: 250px; }
 
 /*vmSwipe styles*/
 .vm-swipe {
+  overflow: hidden; }
+
+.vm-swipe-inner {
   overflow: hidden; }
 
 .vm-swipe-item {

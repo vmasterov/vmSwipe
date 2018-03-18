@@ -17,12 +17,6 @@
       PHASE_END = 'end',
       PHASE_CANCEL = 'cancel';
   
-  var supports = {
-    transition: null,
-    animation: null,
-    transform: null
-  };
-  
   var defaults = {
     type: 'scroll'
   };
@@ -53,7 +47,7 @@
       var plugin = it.data( PLUGIN_NS );
   
       if ( !plugin ) {
-        plugin = new VmSwipe( it, options );
+        plugin = new VmSwipe( this, options );
         it.data( PLUGIN_NS, plugin );
       }
     });
@@ -69,12 +63,6 @@
         duration = 0,
         startTouchesDistance = 0,
         endTouchesDistance = 0;
-    
-    // Finger data object
-    var fingerData = {};
-    
-    // Support css properties
-    support( supports );
   
     //Current phase of th touch cycle
     var phase = "start";
@@ -83,15 +71,25 @@
     var startTime = 0,
         endTime = 0,
         previousTouchEndTime = 0;
-  
-    // Add item classes
-    element.children().addClass( 'vm-swipe-item' );
     
-    // Add wrapper
-    wrapContent( element );
+    var supportsTouch = 'ontouchstart' in window,
+        supportsPointer_IE10 = window.navigator.msPointerEnabled && !window.navigator.pointerEnabled && !SUPPORTS_TOUCH,
+        supportsPointer = (window.navigator.pointerEnabled || window.navigator.msPointerEnabled) && !SUPPORTS_TOUCH;
+    
+    var startEvent = supportsTouch ? 'touchstart' : ( supportsPointer ? ( supportsPointer_IE10 ? 'MSPointerDown' : 'pointerdown') : 'mousedown' ),
+        moveEvent = supportsTouch ? 'touchmove' : ( supportsPointer ? ( supportsPointer_IE10 ? 'MSPointerMove' : 'pointermove') : 'mousemove' ),
+        endEvent = supportsTouch ? 'touchend' : ( supportsPointer ? ( supportsPointer_IE10 ? 'MSPointerUp' : 'pointerup') : 'mouseup' ),
+        leaveEvent = ( supportsTouch || supportsPointer ) ? ( supportsPointer ? 'mouseleave' : null) : 'mouseleave',
+        cancelEvent = ( supportsTouch ? ( supportsPointer_IE10 ? 'MSPointerCancel' : 'pointercancel' ) : 'touchcancel' );
+  
+    // Add gestures to all swipable areas if supported
+    var $element = $( element );
+    
+    /*var eventsHandlers = {};
+    eventsHandlers[startEvent + 'Handler'] = true;*/
     
     try {
-      element.on( 'touchstart mousedown', touchStart );
+      $element.on( 'touchstart pointerdown MSPointerDown mousedown', touchStart );
       // $element.on(cancelEvent, touchCancel);
     } catch (e) {
       $.error('events not supported ' + startEvent + ',' + cancelEvent + ' on jQuery.swipe');
@@ -106,24 +104,10 @@
     };
   
     function touchStart( event ){
-      console.log( event.type );
-      event = event.originalEvent ? event.originalEvent : event;
-  
-      phase = PHASE_START;
-  
-      distance = 0;
-      direction = null;
-      currentDirection=null;
-      duration = 0;
-      startTouchesDistance = 0;
-      endTouchesDistance = 0;
-      
-      createFingerData( event );
-  
-      startTime = getTimeStamp();
+      // if( event.type !== startEvent ) return;
+      console.log( event.type, startEvent );
+      // console.log( 1 );
     }
-  
-    
   
     // Helpers
     function winWidthResize( context, func ){
@@ -144,54 +128,6 @@
           clearTimeout( timerId );
         }, 150);
       });
-    }
-  
-    function wrapContent( element ){
-      element.contents().wrapAll( '<div class="vm-swipe-inner" style="width:' + getWrapperWidth( element ) + 'px">' );
-    }
-  
-    function createFingerData( event ) {
-      var f = {
-        start: {
-          x: 0,
-          y: 0
-        },
-        last: {
-          x: 0,
-          y: 0
-        },
-        end: {
-          x: 0,
-          y: 0
-        }
-      };
-      f.start.x = f.last.x = f.end.x = event.pageX || event.clientX;
-      f.start.y = f.last.y = f.end.y = event.pageY || event.clientY;
-      fingerData = f;
-      return f;
-    }
-  
-    function getWrapperWidth( element ){
-      var width = 0;
-    
-      element.children().each( function(){
-        var it = $( this );
-        width += it.outerWidth( true );
-      });
-    
-      return width;
-    }
-  
-    function support( values ){
-      var styles = $( '<support />' ).get( 0 ).style;
-      $.each( values, function( key, value ){
-        if( styles[key] !== undefined ) values[key] = true;
-      });
-    }
-  
-    function getTimeStamp() {
-      var now = new Date();
-      return now.getTime();
     }
   }
   
