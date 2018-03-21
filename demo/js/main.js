@@ -121,6 +121,19 @@
       createFingerData( event );
   
       startTime = getTimeStamp();
+      
+      element.on( 'touchend mouseup', touchEnd );
+      element.on( 'touchmove mousemove', touchMove );
+    }
+    
+    function touchMove( event ){
+      console.log( event.type, distance );
+    }
+    
+    function touchEnd( event ){
+      element.off( 'touchmove mousemove', touchMove );
+      element.off( 'touchend mouseup', touchEnd );
+      console.log( event.type );
     }
   
     
