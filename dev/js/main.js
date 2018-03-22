@@ -127,7 +127,8 @@
     }
     
     function touchMove( event ){
-      console.log( event.type, distance );
+      updateFingerData( event );
+      console.log( event.type, distance, fingerData );
     }
     
     function touchEnd( event ){
@@ -182,6 +183,18 @@
       f.start.y = f.last.y = f.end.y = event.pageY || event.clientY;
       fingerData = f;
       return f;
+    }
+  
+    function updateFingerData( event ){
+      if ( !Object.keys( fingerData ).length ) createFingerData( event );
+      
+      fingerData.last.x = fingerData.end.x;
+      fingerData.last.y = fingerData.end.y;
+    
+      fingerData.end.x = event.pageX || event.clientX;
+      fingerData.end.y = event.pageY || event.clientY;
+    
+      return fingerData;
     }
   
     function getWrapperWidth( element ){
