@@ -8,6 +8,8 @@
       DOWN = 'down',
       IN = 'in',
       OUT = 'out',
+      
+      NONE = 'none',
 
       HORIZONTAL = 'horizontal',
       VERTICAL = 'vertical',
@@ -22,6 +24,8 @@
     animation: null,
     transform: null
   };
+  
+  var position = {};
   
   var defaults = {
     type: 'scroll'
@@ -66,9 +70,7 @@
     var distance = 0,
         direction = null,
         currentDirection = null,
-        duration = 0,
-        startTouchesDistance = 0,
-        endTouchesDistance = 0;
+        duration = 0;
     
     // Finger data object
     var fingerData = {};
@@ -89,6 +91,7 @@
     
     // Add wrapper
     wrapContent( element );
+    var innerWrapper = element.find( '.vm-swipe-inner' );
     
     try {
       element.on( 'touchstart mousedown', touchStart );
@@ -106,35 +109,77 @@
     };
   
     function touchStart( event ){
-      console.log( event.type );
+      event.preventDefault();
       event = event.originalEvent ? event.originalEvent : event;
+  
+      var touches = event.touches;
+      event = touches ? touches[0] : event;
   
       phase = PHASE_START;
   
       distance = 0;
       direction = null;
-      currentDirection=null;
+      currentDirection = null;
       duration = 0;
-      startTouchesDistance = 0;
-      endTouchesDistance = 0;
       
       createFingerData( event );
   
       startTime = getTimeStamp();
+  
+      if( supports.transform ){
+        position = innerWrapper.css( 'transform' ).replace( /.*\(|\)| /g, '' ).split( ',' );
+        position = {
+          x: position[position.length === 16 ? 12 : 4],
+          y: position[position.length === 16 ? 13 : 5]
+        };
+      }
+      else{
+        position = innerWrapper.position();
+        position = {
+          x: position.left,
+          y: position.top
+        };
+      }
+      console.log( position );
       
-      element.on( 'touchend mouseup', touchEnd );
-      element.on( 'touchmove mousemove', touchMove );
+      // element.on( 'touchend mouseup', touchEnd );
+      // element.on( 'touchmove mousemove', touchMove );
+      $( document ).on( 'touchend mouseup', $.proxy( touchEnd, element ) );
+      $( document ).on( 'touchmove mousemove', $.proxy( touchMove, element ) );
     }
     
     function touchMove( event ){
+      event.preventDefault();
+      event = event.originalEvent ? event.originalEvent : event;
+  
+      var touches = event.touches;
+      event = touches ? touches[0] : event;
+      
       updateFingerData( event );
-      console.log( event.type, distance, fingerData );
+      endTime = getTimeStamp();
+      phase = PHASE_MOVE;
+      direction = calculateDirection( fingerData.start, fingerData.end );
+      distance = calculateDistance( fingerData.start, fingerData.end );
+      duration = calculateDuration();
+      
+      changePosition( innerWrapper, distance, direction );
+      // console.log( event.type );
     }
     
     function touchEnd( event ){
-      element.off( 'touchmove mousemove', touchMove );
-      element.off( 'touchend mouseup', touchEnd );
-      console.log( event.type );
+      // element.off( 'touchmove mousemove', touchMove );
+      // element.off( 'touchend mouseup', touchEnd );
+      $( document ).off( 'touchmove mousemove', $.proxy( touchMove, element ) );
+      $( document ).off( 'touchmove mousemove', $.proxy( touchEnd, element ) );
+      console.log( fingerData );
+      console.log(
+        'type: ' + event.type + '\n' +
+        'direction: ' +  direction + '\n' +
+        'distance: ' + distance + '\n' +
+        'duration: ' + duration+ '\n' +
+        'transition: ' + supports.transition + '\n' +
+        'animation: ' + supports.animation + '\n' +
+        'transform: ' + supports.transform );
     }
   
     
@@ -160,8 +205,8 @@
       });
     }
   
-    function wrapContent( element ){
-      element.contents().wrapAll( '<div class="vm-swipe-inner" style="width:' + getWrapperWidth( element ) + 'px">' );
+    function wrapContent( element, wrapper ){
+      element.contents().wrapAll( createWrapper() );
     }
   
     function createFingerData( event ) {
@@ -207,6 +252,26 @@
     
       return width;
     }
+    
+    function createWrapper(){
+      var wrapper = $( '<div />',{
+        'class': 'vm-swipe-inner'
+      });
+      wrapper.css({
+        'width': getWrapperWidth( element ),
+        'transform': 'translate3d(0px, 0px, 0px)'
+        
+      });
+      return wrapper;
+    }
+    
+    function changePosition( element, distance, direction ){
+      var dist = distance;
+      if( direction === 'left' ) dist = -distance;
+      element.css({
+        'transform': 'translate3d(' + dist + 'px, 0px, 0px)'
+      });
+    }
   
     function support( values ){
       var styles = $( '<support />' ).get( 0 ).style;
@@ -216,8 +281,43 @@
     }
   
     function getTimeStamp() {
-      var now = new Date();
-      return now.getTime();
+      return new Date().getTime();
+    }
+  
+    function calculateDirection( startPoint, endPoint ){
+      if( comparePoints( startPoint, endPoint ) ) return NONE;
+    
+      var angle = calculateAngle( startPoint, endPoint );
+    
+      if( ( angle <= 45 ) && ( angle >= 0 ) ) return LEFT;
+      else if( ( angle <= 360 ) && ( angle >= 315 ) ) return LEFT;
+      else if( ( angle >= 135 ) && ( angle <= 225 ) ) return RIGHT;
+      else if( ( angle > 45 ) && ( angle < 135 ) ) return DOWN;
+      else return UP;
+    }
+  
+    function comparePoints( pointA, pointB ){
+      return ( pointA.x === pointB.x && pointA.y === pointB.y );
+    }
+  
+    function calculateAngle( startPoint, endPoint ){
+      var x = startPoint.x - endPoint.x,
+          y = endPoint.y - startPoint.y,
+          r = Math.atan2( y, x ), //radians
+          angle = Math.round( r * 180 / Math.PI ); //degrees
+    
+      //ensure value is positive
+      if( angle < 0 ) angle = 360 - Math.abs(angle);
+      
+      return angle;
+    }
+  
+    function calculateDistance( startPoint, endPoint ) {
+      return Math.round( Math.sqrt( Math.pow( endPoint.x - startPoint.x, 2 ) + Math.pow( endPoint.y - startPoint.y, 2 ) ) );
+    }
+  
+    function calculateDuration() {
+      return endTime - startTime;
     }
   }
   
