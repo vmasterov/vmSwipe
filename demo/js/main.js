@@ -134,7 +134,7 @@
     }
     
     function touchMove( event ){
-      event.preventDefault();
+      // event.preventDefault();
       event = event.originalEvent ? event.originalEvent : event;
   
       var touches = event.touches;
@@ -143,7 +143,7 @@
       updateFingerData( event );
       endTime = getTimeStamp();
       phase = PHASE_MOVE;
-      direction = calculateDirection( fingerData.start, fingerData.end );
+      // direction = calculateDirection( fingerData.start, fingerData.end );
       currentDirection = calculateDirection( fingerData.last, fingerData.end );
       distance = calculateDistance( fingerData.start, fingerData.end );
       currentDistance= calculateDistance( fingerData.end, fingerData.last );
@@ -310,7 +310,7 @@
           y = endPoint.y - startPoint.y,
           r = Math.atan2( y, x ), //radians
           angle = Math.round( r * 180 / Math.PI ); //degrees
-      console.log( startPoint.x, endPoint.x, r );
+      console.log( startPoint.x, endPoint.x, r, angle );
   
       // console.log( x );
   
