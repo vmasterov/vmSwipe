@@ -71,7 +71,8 @@
         currentDistance = 0,
         direction = null,
         currentDirection = null,
-        duration = 0;
+        duration = 0,
+        startPosition = 0;
     
     // Finger data object
     var fingerData = {};
@@ -123,6 +124,7 @@
       currentDirection = null;
       duration = 0;
       
+      getCurrentPosition();
       createFingerData( event );
   
       startTime = getTimeStamp();
@@ -145,12 +147,12 @@
       phase = PHASE_MOVE;
       // direction = calculateDirection( fingerData.start, fingerData.end );
       currentDirection = calculateDirection( fingerData.last, fingerData.end );
-      distance = calculateDistance( fingerData.start, fingerData.end );
+      // distance = calculateDistance( fingerData.start, fingerData.end );
       currentDistance= calculateDistance( fingerData.end, fingerData.last );
       duration = calculateDuration();
-      getCurrentPosition();
+      // getCurrentPosition();
       
-      changePosition( innerWrapper, currentDirection, currentDistance, position );
+      changePosition( innerWrapper, currentDirection, currentDistance );
       // console.log( direction, currentDirection );
     }
     
@@ -159,14 +161,6 @@
       // element.off( 'touchend mouseup', touchEnd );
       $( document ).off( 'touchmove mousemove', $.proxy( touchMove, element ) );
       $( document ).off( 'touchmove mousemove', $.proxy( touchEnd, element ) );
-    //   console.log(
-    //     'type: ' + event.type + '\n' +
-    //     'direction: ' +  direction + '\n' +
-    //     'distance: ' + distance + '\n' +
-    //     'duration: ' + duration+ '\n' +
-    //     'transition: ' + supports.transition + '\n' +
-    //     'animation: ' + supports.animation + '\n' +
-    //     'transform: ' + supports.transform );
      }
   
     
@@ -196,15 +190,15 @@
       if( supports.transform ){
         position = innerWrapper.css( 'transform' ).replace( /.*\(|\)| /g, '' ).split( ',' );
         position = {
-          x: position[position.length === 16 ? 12 : 4],
-          y: position[position.length === 16 ? 13 : 5]
+          x: +position[position.length === 16 ? 12 : 4],
+          y: +position[position.length === 16 ? 13 : 5]
         };
       }
       else{
         position = innerWrapper.position();
         position = {
-          x: position.left,
-          y: position.top
+          x: +position.left,
+          y: +position.top
         };
       }
     }
@@ -269,13 +263,18 @@
       return wrapper;
     }
     
-    function changePosition( element, currentDirection, currentDistance, position ){
+    function changePosition( element, currentDirection, currentDistance ){
       var dist = currentDistance;
-      if( currentDirection === 'up' || currentDirection === 'down' ) return;
+      if( currentDirection === 'up' || currentDirection === 'down' ){
+        console.log( currentDirection );
+        return;
+      }
       if( currentDirection === 'left' ) dist = -currentDistance;
-      // console.log( dist, position.x, currentDirection );
-  
-      element.css({ 'transform': 'translate3d(' + ( dist + +position.x ) + 'px, 0px, 0px)' });
+      console.log( position.x );
+      position.x += dist;
+      console.log( position.x );
+      if( position.x > 0 ) position.x = 0;
+      element.css({ 'transform': 'translate3d(' + position.x  + 'px, 0px, 0px)' });
     }
   
     function support( values ){
@@ -310,10 +309,8 @@
           y = endPoint.y - startPoint.y,
           r = Math.atan2( y, x ), //radians
           angle = Math.round( r * 180 / Math.PI ); //degrees
-      console.log( startPoint.x, endPoint.x, r, angle );
   
-      // console.log( x );
-  
+      // console.log( angle );
       //ensure value is positive
       if( angle < 0 ) angle = 360 - Math.abs(angle);
       
