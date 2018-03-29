@@ -8,12 +8,12 @@
       DOWN = 'down',
       IN = 'in',
       OUT = 'out',
-      
+  
       NONE = 'none',
-
+  
       HORIZONTAL = 'horizontal',
       VERTICAL = 'vertical',
-
+  
       PHASE_START = 'start',
       PHASE_MOVE = 'move',
       PHASE_END = 'end',
@@ -55,7 +55,7 @@
       var it = $( this );
       
       var plugin = it.data( PLUGIN_NS );
-  
+      
       if ( !plugin ) {
         plugin = new VmSwipe( it, options );
         it.data( PLUGIN_NS, plugin );
@@ -65,7 +65,7 @@
   
   function VmSwipe( element, options ){
     var options = $.extend( {}, options );
-  
+    
     //touch properties
     var distance = 0,
         currentDistance = 0,
@@ -74,20 +74,25 @@
         duration = 0,
         startPosition = 0;
     
+    var elementWidth = element.outerWidth(),
+        wrapperWidth = getWrapperWidth( element );
+  
+    debugger;
+    console.log( elementWidth );
     // Finger data object
     var fingerData = {};
     
     // Support css properties
     support( supports );
-  
+    
     //Current phase of th touch cycle
     var phase = "start";
-  
+    
     //track times
     var startTime = 0,
         endTime = 0,
         previousTouchEndTime = 0;
-  
+    
     // Add item classes
     element.children().addClass( 'vm-swipe-item' );
     
@@ -101,7 +106,7 @@
     } catch (e) {
       $.error('events not supported ' + startEvent + ',' + cancelEvent + ' on jQuery.swipe');
     }
-  
+    
     // Public methods
     this.showData = function(){
       console.log( 'showData: ', $( this ).data( PLUGIN_NS ) );
@@ -109,16 +114,16 @@
     this.setData = function( str ){
       console.log( 'Your data is: ' + str );
     };
-  
+    
     function touchStart( event ){
       event.preventDefault();
       event = event.originalEvent ? event.originalEvent : event;
-  
+      
       var touches = event.touches;
       event = touches ? touches[0] : event;
-  
+      
       phase = PHASE_START;
-  
+      
       distance = 0;
       direction = null;
       currentDirection = null;
@@ -126,7 +131,7 @@
       
       getCurrentPosition();
       createFingerData( event );
-  
+      
       startTime = getTimeStamp();
       
       // element.on( 'touchend mouseup', touchEnd );
@@ -138,7 +143,7 @@
     function touchMove( event ){
       // event.preventDefault();
       event = event.originalEvent ? event.originalEvent : event;
-  
+      
       var touches = event.touches;
       event = touches ? touches[0] : event;
       
@@ -161,22 +166,22 @@
       // element.off( 'touchend mouseup', touchEnd );
       $( document ).off( 'touchmove mousemove', $.proxy( touchMove, element ) );
       $( document ).off( 'touchmove mousemove', $.proxy( touchEnd, element ) );
-     }
-  
+    }
     
-  
+    
+    
     // Helpers
     function winWidthResize( context, func ){
       var timerId,
           windowWidth = $( window ).width(),
           arg = [].slice.call( arguments, 1 );
-    
+      
       $( window ).resize( function(){
         if ( windowWidth === $( window ).width() ) return;
         if( timerId ) clearTimeout( timerId );
-      
+        
         windowWidth = $( window ).width();
-      
+        
         // This function was called once after resize event
         timerId = setTimeout( function(){
           // console.log( 'winWidthResize' );
@@ -202,11 +207,11 @@
         };
       }
     }
-  
+    
     function wrapContent( element, wrapper ){
       element.contents().wrapAll( createWrapper() );
     }
-  
+    
     function createFingerData( event ) {
       var f = {
         start: {
@@ -227,27 +232,27 @@
       fingerData = f;
       return f;
     }
-  
+    
     function updateFingerData( event ){
       if ( !Object.keys( fingerData ).length ) createFingerData( event );
       
       fingerData.last.x = fingerData.end.x;
       fingerData.last.y = fingerData.end.y;
-    
+      
       fingerData.end.x = event.pageX || event.clientX;
       fingerData.end.y = event.pageY || event.clientY;
-    
+      
       return fingerData;
     }
-  
+    
     function getWrapperWidth( element ){
       var width = 0;
-    
+      
       element.children().each( function(){
         var it = $( this );
         width += it.outerWidth( true );
       });
-    
+      
       return width;
     }
     
@@ -256,7 +261,7 @@
         'class': 'vm-swipe-inner'
       });
       wrapper.css({
-        'width': getWrapperWidth( element ),
+        'width': wrapperWidth,
         'transform': 'translate3d(0px, 0px, 0px)'
         
       });
@@ -265,62 +270,58 @@
     
     function changePosition( element, currentDirection, currentDistance ){
       var dist = currentDistance;
-      if( currentDirection === 'up' || currentDirection === 'down' ){
-        console.log( currentDirection );
-        return;
-      }
+      if( currentDirection === 'up' || currentDirection === 'down' ) return;
       if( currentDirection === 'left' ) dist = -currentDistance;
-      console.log( position.x );
       position.x += dist;
-      console.log( position.x );
       if( position.x > 0 ) position.x = 0;
+      if( Math.abs( position.x ) > ( wrapperWidth - elementWidth ) ) position.x = -( wrapperWidth - elementWidth );
       element.css({ 'transform': 'translate3d(' + position.x  + 'px, 0px, 0px)' });
     }
-  
+    
     function support( values ){
       var styles = $( '<support />' ).get( 0 ).style;
       $.each( values, function( key, value ){
         if( styles[key] !== undefined ) values[key] = true;
       });
     }
-  
+    
     function getTimeStamp() {
       return new Date().getTime();
     }
-  
+    
     function calculateDirection( startPoint, endPoint ){
       if( comparePoints( startPoint, endPoint ) ) return NONE;
-    
+      
       var angle = calculateAngle( startPoint, endPoint );
-    
+      
       if( ( angle <= 45 ) && ( angle >= 0 ) ) return LEFT;
       else if( ( angle <= 360 ) && ( angle >= 315 ) ) return LEFT;
       else if( ( angle >= 135 ) && ( angle <= 225 ) ) return RIGHT;
       else if( ( angle > 45 ) && ( angle < 135 ) ) return DOWN;
       else return UP;
     }
-  
+    
     function comparePoints( pointA, pointB ){
       return ( pointA.x === pointB.x && pointA.y === pointB.y );
     }
-  
+    
     function calculateAngle( startPoint, endPoint ){
       var x = startPoint.x - endPoint.x,
           y = endPoint.y - startPoint.y,
           r = Math.atan2( y, x ), //radians
           angle = Math.round( r * 180 / Math.PI ); //degrees
-  
+      
       // console.log( angle );
       //ensure value is positive
       if( angle < 0 ) angle = 360 - Math.abs(angle);
       
       return angle;
     }
-  
+    
     function calculateDistance( startPoint, endPoint ) {
       return Math.round( Math.sqrt( Math.pow( endPoint.x - startPoint.x, 2 ) + Math.pow( endPoint.y - startPoint.y, 2 ) ) );
     }
-  
+    
     function calculateDuration() {
       return endTime - startTime;
     }
