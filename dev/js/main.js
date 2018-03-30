@@ -74,11 +74,6 @@
         duration = 0,
         startPosition = 0;
     
-    var elementWidth = element.outerWidth(),
-        wrapperWidth = getWrapperWidth( element );
-  
-    debugger;
-    console.log( elementWidth );
     // Finger data object
     var fingerData = {};
     
@@ -92,13 +87,17 @@
     var startTime = 0,
         endTime = 0,
         previousTouchEndTime = 0;
-    
-    // Add item classes
-    element.children().addClass( 'vm-swipe-item' );
-    
+        
     // Add wrapper
     wrapContent( element );
     var innerWrapper = element.find( '.vm-swipe-inner' );
+  
+    // Add item classes
+    element.children().addClass( 'vm-swipe-item' );
+  
+    var elementWidth = element.outerWidth();
+    // console.log( elementWidth );
+    // debugger;
     
     try {
       element.on( 'touchstart mousedown', touchStart );
@@ -167,6 +166,11 @@
       $( document ).off( 'touchmove mousemove', $.proxy( touchMove, element ) );
       $( document ).off( 'touchmove mousemove', $.proxy( touchEnd, element ) );
     }
+  
+    winWidthResize( null, function(){
+      elementWidth = element.outerWidth();
+      changePosition( innerWrapper, currentDirection, currentDistance );
+    });
     
     
     
@@ -174,8 +178,8 @@
     function winWidthResize( context, func ){
       var timerId,
           windowWidth = $( window ).width(),
-          arg = [].slice.call( arguments, 1 );
-      
+          arg = [].slice.call( arguments, 2 );
+  
       $( window ).resize( function(){
         if ( windowWidth === $( window ).width() ) return;
         if( timerId ) clearTimeout( timerId );
@@ -184,7 +188,6 @@
         
         // This function was called once after resize event
         timerId = setTimeout( function(){
-          // console.log( 'winWidthResize' );
           func.apply( context, arg );
           clearTimeout( timerId );
         }, 150);
@@ -261,7 +264,7 @@
         'class': 'vm-swipe-inner'
       });
       wrapper.css({
-        'width': wrapperWidth,
+        'width': getWrapperWidth( element ),
         'transform': 'translate3d(0px, 0px, 0px)'
         
       });
@@ -269,12 +272,30 @@
     }
     
     function changePosition( element, currentDirection, currentDistance ){
-      var dist = currentDistance;
+      // var dist = currentDistance,
+      var dist = ( currentDirection === 'left' || currentDirection === 'down' ) ? -currentDistance : currentDistance,
+          wrapperWidth = innerWrapper.outerWidth(),
+          wrapperHeight;
+      
       if( currentDirection === 'up' || currentDirection === 'down' ) return;
-      if( currentDirection === 'left' ) dist = -currentDistance;
+      
+      
+      // if( currentDirection === 'left' ) dist = -currentDistance;
       position.x += dist;
-      if( position.x > 0 ) position.x = 0;
-      if( Math.abs( position.x ) > ( wrapperWidth - elementWidth ) ) position.x = -( wrapperWidth - elementWidth );
+      
+      if( position.x > 0 )
+      {
+        position.x = 0;
+        // console.log( 'position.x = 0;' );
+      }
+      if( Math.abs( position.x ) > ( wrapperWidth - elementWidth ) )
+      {
+        position.x = -( wrapperWidth - elementWidth );
+        // console.log( 'position.x = big' );
+      }
+  
+      console.log( position.x );
+      
       element.css({ 'transform': 'translate3d(' + position.x  + 'px, 0px, 0px)' });
     }
     
