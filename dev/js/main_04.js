@@ -61,10 +61,7 @@
       transform: null
     };
     
-    var position = {
-      x: 0,
-      y: 0
-    };
+    var position = {};
     
     //touch properties
     var distance = 0,
@@ -96,8 +93,8 @@
     element.children().addClass( 'vm-swipe-item' );
     
     try {
-      element.on( 'touchstart.vmswipe mousedown.vmswipe', touchStart );
-      element.on( 'touchcancel.vmswipe', touchEnd );
+      element.on( 'touchstart mousedown', touchStart );
+      element.on( 'touchcancel', touchEnd );
     } catch (e) {
       $.error('events not supported ' + startEvent + ',' + cancelEvent + ' on jQuery.swipe');
     }
@@ -131,8 +128,8 @@
       
       startTime = getTimeStamp();
       
-      $( document ).on( 'touchend.vmswipe mouseup.vmswipe', $.proxy( touchEnd, element ) );
-      $( document ).on( 'touchmove.vmswipe mousemove.vmswipe', $.proxy( touchMove, element ) );
+      $( document ).on( 'touchend mouseup', $.proxy( touchEnd, element ) );
+      $( document ).on( 'touchmove mousemove', $.proxy( touchMove, element ) );
     }
     
     function touchMove( event ){
@@ -156,8 +153,8 @@
       
       element.removeClass( 'moving' );
       
-      $( document ).off( 'touchmove.vmswipe mousemove.vmswipe', $.proxy( touchMove, element ) );
-      $( document ).off( 'touchmove.vmswipe mousemove.vmswipe', $.proxy( touchEnd, element ) );
+      $( document ).off( 'touchmove mousemove', $.proxy( touchMove, element ) );
+      $( document ).off( 'touchmove mousemove', $.proxy( touchEnd, element ) );
     }
     
     winWidthResize( null, function(){

@@ -1,13 +1,10 @@
 ( function( $ ){
   // Constants
   var PLUGIN_NS = 'vmSwipe',
-      VERSION = '10.0',
       LEFT = 'left',
       RIGHT = 'right',
       UP = 'up',
       DOWN = 'down',
-      IN = 'in',
-      OUT = 'out',
   
       NONE = 'none',
   
@@ -18,14 +15,6 @@
       PHASE_MOVE = 'move',
       PHASE_END = 'end',
       PHASE_CANCEL = 'cancel';
-  
-  var supports = {
-    transition: null,
-    animation: null,
-    transform: null
-  };
-  
-  var position = {};
   
   var defaults = {
     type: 'scroll'
@@ -66,6 +55,17 @@
   function VmSwipe( element, options ){
     var options = $.extend( {}, options );
     
+    var supports = {
+      transition: null,
+      animation: null,
+      transform: null
+    };
+    
+    var position = {
+      x: 0,
+      y: 0
+    };
+    
     //touch properties
     var distance = 0,
         currentDistance = 0,
@@ -87,21 +87,17 @@
     var startTime = 0,
         endTime = 0,
         previousTouchEndTime = 0;
-        
+    
     // Add wrapper
     wrapContent( element );
     var innerWrapper = element.find( '.vm-swipe-inner' );
-  
+    
     // Add item classes
     element.children().addClass( 'vm-swipe-item' );
-  
-    var elementWidth = element.outerWidth();
-    // console.log( elementWidth );
-    // debugger;
     
     try {
-      element.on( 'touchstart mousedown', touchStart );
-      // $element.on(cancelEvent, touchCancel);
+      element.on( 'touchstart.vmswipe mousedown.vmswipe', touchStart );
+      element.on( 'touchcancel.vmswipe', touchEnd );
     } catch (e) {
       $.error('events not supported ' + startEvent + ',' + cancelEvent + ' on jQuery.swipe');
     }
@@ -127,49 +123,45 @@
       direction = null;
       currentDirection = null;
       duration = 0;
+  
+      element.toggleClass( 'moving', event.type === 'mousedown');
       
       getCurrentPosition();
       createFingerData( event );
       
       startTime = getTimeStamp();
       
-      // element.on( 'touchend mouseup', touchEnd );
-      // element.on( 'touchmove mousemove', touchMove );
-      $( document ).on( 'touchend mouseup', $.proxy( touchEnd, element ) );
-      $( document ).on( 'touchmove mousemove', $.proxy( touchMove, element ) );
+      $( document ).on( 'touchend.vmswipe mouseup.vmswipe', $.proxy( touchEnd, element ) );
+      $( document ).on( 'touchmove.vmswipe mousemove.vmswipe', $.proxy( touchMove, element ) );
     }
     
     function touchMove( event ){
-      // event.preventDefault();
       event = event.originalEvent ? event.originalEvent : event;
       
       var touches = event.touches;
       event = touches ? touches[0] : event;
       
       updateFingerData( event );
+      
       endTime = getTimeStamp();
       phase = PHASE_MOVE;
-      // direction = calculateDirection( fingerData.start, fingerData.end );
       currentDirection = calculateDirection( fingerData.last, fingerData.end );
-      // distance = calculateDistance( fingerData.start, fingerData.end );
       currentDistance= calculateDistance( fingerData.end, fingerData.last );
-      duration = calculateDuration();
-      // getCurrentPosition();
       
-      changePosition( innerWrapper, currentDirection, currentDistance );
-      // console.log( direction, currentDirection );
+      changePosition( innerWrapper, currentDirection, currentDistance, position );
     }
     
     function touchEnd( event ){
-      // element.off( 'touchmove mousemove', touchMove );
-      // element.off( 'touchend mouseup', touchEnd );
-      $( document ).off( 'touchmove mousemove', $.proxy( touchMove, element ) );
-      $( document ).off( 'touchmove mousemove', $.proxy( touchEnd, element ) );
+      duration = calculateDuration();
+      
+      element.removeClass( 'moving' );
+      
+      $( document ).off( 'touchmove.vmswipe mousemove.vmswipe', $.proxy( touchMove, element ) );
+      $( document ).off( 'touchmove.vmswipe mousemove.vmswipe', $.proxy( touchEnd, element ) );
     }
-  
+    
     winWidthResize( null, function(){
-      elementWidth = element.outerWidth();
-      changePosition( innerWrapper, currentDirection, currentDistance );
+      changeHorizontalPosition( innerWrapper, innerWrapper.outerWidth(), position );
     });
     
     
@@ -179,7 +171,7 @@
       var timerId,
           windowWidth = $( window ).width(),
           arg = [].slice.call( arguments, 2 );
-  
+      
       $( window ).resize( function(){
         if ( windowWidth === $( window ).width() ) return;
         if( timerId ) clearTimeout( timerId );
@@ -271,32 +263,23 @@
       return wrapper;
     }
     
-    function changePosition( element, currentDirection, currentDistance ){
-      // var dist = currentDistance,
+    function changePosition( innerWrapper, currentDirection, currentDistance, position ){
       var dist = ( currentDirection === 'left' || currentDirection === 'down' ) ? -currentDistance : currentDistance,
-          wrapperWidth = innerWrapper.outerWidth(),
           wrapperHeight;
       
       if( currentDirection === 'up' || currentDirection === 'down' ) return;
       
-      
-      // if( currentDirection === 'left' ) dist = -currentDistance;
-      position.x += dist;
-      
-      if( position.x > 0 )
-      {
-        position.x = 0;
-        // console.log( 'position.x = 0;' );
+      if( currentDirection === 'left' || currentDirection === 'right' ){
+        position.x += dist;
+        changeHorizontalPosition( innerWrapper, innerWrapper.outerWidth(), position );
       }
-      if( Math.abs( position.x ) > ( wrapperWidth - elementWidth ) )
-      {
-        position.x = -( wrapperWidth - elementWidth );
-        // console.log( 'position.x = big' );
-      }
-  
-      console.log( position.x );
+    }
+    
+    function changeHorizontalPosition( innerWrapper, wrapperWidth, position ){
+      if( position.x > 0 ) position.x = 0;
+      if( Math.abs( position.x ) > ( wrapperWidth - element.outerWidth() ) ) position.x = -( wrapperWidth - element.outerWidth() );
       
-      element.css({ 'transform': 'translate3d(' + position.x  + 'px, 0px, 0px)' });
+      innerWrapper.css({ 'transform': 'translate3d(' + position.x  + 'px, 0px, 0px)' });
     }
     
     function support( values ){
@@ -332,7 +315,6 @@
           r = Math.atan2( y, x ), //radians
           angle = Math.round( r * 180 / Math.PI ); //degrees
       
-      // console.log( angle );
       //ensure value is positive
       if( angle < 0 ) angle = 360 - Math.abs(angle);
       
