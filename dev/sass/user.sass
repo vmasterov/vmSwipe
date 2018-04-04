@@ -1,0 +1,130 @@
+/*Demo styles*/
+.swipe-block
+  margin: 0 auto
+  padding: 10px
+  //width: 750px
+  width: 50%
+  overflow: hidden
+  background-color: #d8e6ec
+
+.th01
+  background-color: #2e93ba
+
+.th02
+  background-color: #42BA6C
+
+.th03
+  background-color: #BA9237
+
+.th04
+  background-color: #BA4972
+
+.double-width.block
+  width: 1000px
+
+.block
+  margin-right: 10px
+  width: 500px
+  height: 100px
+  float: left
+  text-align: center
+  &:last-child
+    margin-right: 0
+
+.block
+  span
+    color: #fff
+    font-size: 32px
+    line-height: 100px
+
+.info-block
+  text-align: center
+  margin-top: 60px
+
+button.mtd
+  font-size: 16px
+  width: 125px
+  height: 45px
+  margin: 0 5px
+  cursor: pointer
+  outline: none
+  transition: 0.25s
+
+button.mtd-th1
+  background-color: transparent
+  border: 1px solid #2e93ba
+  color: #227899
+
+button.mtd-th1:hover
+  background-color: #2e93ba
+  color: #e8eef0
+  box-shadow: 0 0 10px 1px rgba( 20, 67, 86, 0.62 )
+
+button.mtd-th2
+  background-color: transparent
+  border: 1px solid #3fac65
+  color: #31814d
+
+button.mtd-th2:hover
+  background-color: #42ba6c
+  color: #e8eef0
+  box-shadow: 0 0 10px 1px rgba(36, 86, 20, 0.62)
+
+button[disabled], button[disabled]:hover
+  background-color: #e8e8e8
+  border: 1px solid #c3c1c1
+  color: #b0b0b0
+  box-shadow: none
+  cursor: default
+
+.info-block-inner-wrapper
+  border: 1px solid #d8e6ec
+  position: relative
+  padding: 50px 0
+
+.info-block-header
+  position: absolute
+  font-size: 30px
+  width: 100%
+  left: 0
+  top: -20px
+  span
+    display: inline-block
+    width: 180px
+    background-color: #fff
+
+.info-block-header-th1
+  span
+    color: #2F7F9F
+
+.info-block-header-th2
+  span
+    color: #31814d
+    
+.controls-block
+  margin: 0 auto
+  overflow: hidden
+  width: calc( 50% + 20px )
+  & > :last-child
+    margin-right: 0
+
+.controls-block > *
+  float: left
+  width: 48%
+  margin-right: 4%
+    
+    
+/* Media */
+@media( max-width: 1700px )
+  button.mtd
+    display: block
+    width: 90%
+    margin: 0 auto 15px
+    &:last-child
+      margin-bottom: 0
+
+@media( max-width: 768px )
+  .controls-block > *
+    float: none
+    width: 100%
+    margin-right: 0

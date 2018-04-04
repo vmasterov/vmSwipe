@@ -7,40 +7,81 @@
   <title>vmSwipe: demo</title>
   
   <!-- Styles -->
-  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/core.css">
+  <link rel="stylesheet" href="css/user.css">
   <!-- Styles -->
 </head>
 <body>
-  <div class="swipe-block">
-    <div class="vm-swipe">
-      <div class="block th01">
-        <span>#1 Lorem ipsum</span>
-      </div>
-      <div class="block th02">
-        <span>#2 Lorem ipsum dolor</span>
-      </div>
-      <div class="block double-width th03">
-        <span>#3 Sapiente similique sit</span>
-      </div>
-      <div class="block th04">
-        <span>#4 Lorem ipsum dolor</span>
-      </div>
+<div class="swipe-block">
+  <div class="vm-swipe">
+    <div class="block th01">
+      <span>#1 Lorem ipsum</span>
+    </div>
+    <div class="block th02">
+      <span>#2 Lorem ipsum dolor</span>
+    </div>
+    <div class="block double-width th03">
+      <span>#3 Sapiente similique sit</span>
+    </div>
+    <div class="block th04">
+      <span>#4 Lorem ipsum dolor</span>
     </div>
   </div>
-  <div class="swipe-methods-block">
-    <button class="mtd">Init</button>
-    <button class="mtd">Destroy</button>
-    <button class="mtd">Refresh</button>
+</div>
+
+<div class="controls-block">
+  <div class="swipe-methods-block info-block">
+    <div class="swipe-methods-inner-wrapper info-block-inner-wrapper">
+      <div class="swipe-methods-header info-block-header info-block-header-th1"><span>Methods</span></div>
+      <button id="init" class="mtd mtd-th1" disabled>Init</button>
+      <button id="destroy" class="mtd mtd-th1">Destroy</button>
+      <button id="refresh" class="mtd mtd-th1">Refresh</button>
+    </div>
   </div>
   
-  <!--Scripts-->
-  <script src="js/jquery-2.2.4.min.js"></script>
-  <script src="js/main.js"></script>
-  <script>
-    $( function(){
-      $( '.vm-swipe' ).vmSwipe();
+  <div class="swipe-update-block info-block">
+    <div class="swipe-update-inner-wrapper info-block-inner-wrapper">
+      <div class="swipe-methods-header info-block-header info-block-header-th2"><span>Update block</span></div>
+      <button id="add" class="mtd mtd-th2">Add items</button>
+      <button id="remove" class="mtd mtd-th2">Remove items</button>
+    </div>
+  </div>
+</div>
+
+<!--Scripts-->
+<script src="js/jquery-2.2.4.min.js"></script>
+<script src="js/main.js"></script>
+<script>
+  $( function(){
+    $( '.vm-swipe' ).vmSwipe();
+    
+    // Add item
+    $( '#add' ).on( 'click', function(){
+      addItem( $( '.block' ) );
     });
-  </script>
-  <!--Scripts-->
+    function addItem( itemForClone ){
+      if( !itemForClone.length ) alert( 'Nothing to add' );
+      
+      var string = '#' + ( itemForClone.length + 1 ) + ' New item',
+          newItem = itemForClone.last().clone();
+      
+      itemForClone.parent().append( newItem );
+      newItemText( newItem, string );
+    }
+    function newItemText( newItem, string ){
+      newItem.find( 'span' ).html( string );
+    }
+    
+    // Remove item
+    $( '#remove' ).on( 'click', function(){
+      removeItem( $( '.block' ) );
+    });
+    function removeItem( itemForRemove ){
+      if( !itemForRemove.length ) alert( 'Nothing to remove' );
+      itemForRemove.last().remove();
+    }
+  });
+</script>
+<!--Scripts-->
 </body>
 </html>
