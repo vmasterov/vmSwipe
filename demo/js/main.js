@@ -54,7 +54,7 @@
   
   function VmSwipe( element, options ){
     var options = $.extend( {}, options );
-    
+    // console.log( element.data() );
     var supports = {
       transition: null,
       animation: null,
@@ -93,7 +93,7 @@
     var innerWrapper = element.find( '.vm-swipe-inner' );
     
     // Add item classes
-    element.children().addClass( 'vm-swipe-item' );
+    // element.children().addClass( 'vm-swipe-item' );
     
     try {
       element.on( 'touchstart.vmswipe mousedown.vmswipe', touchStart );
@@ -108,6 +108,15 @@
     };
     this.setData = function( str ){
       console.log( 'Your data is: ' + str );
+    };
+    this.destroy = function(){
+      removeListeners();
+      element.data( PLUGIN_NS, null );
+      innerWrapper.children().unwrap();
+    };
+    this.refresh = function(){
+      innerWrapper.width( getWrapperWidth( innerWrapper ) );
+      changeHorizontalPosition( innerWrapper, innerWrapper.outerWidth(), position );
     };
     
     function touchStart( event ){
@@ -207,6 +216,29 @@
       element.contents().wrapAll( createWrapper() );
     }
     
+    function createWrapper(){
+      var wrapper = $( '<div />',{
+        'class': 'vm-swipe-inner'
+      });
+      wrapper.css({
+        'width': getWrapperWidth( element ),
+        'transform': 'translate3d(0px, 0px, 0px)'
+      
+      });
+      return wrapper;
+    }
+  
+    function getWrapperWidth( element ){
+      var width = 0;
+    
+      element.children().each( function(){
+        var it = $( this );
+        width += it.outerWidth( true );
+      });
+    
+      return width;
+    }
+    
     function createFingerData( event ) {
       var f = {
         start: {
@@ -238,29 +270,6 @@
       fingerData.end.y = event.pageY || event.clientY;
       
       return fingerData;
-    }
-    
-    function getWrapperWidth( element ){
-      var width = 0;
-      
-      element.children().each( function(){
-        var it = $( this );
-        width += it.outerWidth( true );
-      });
-      
-      return width;
-    }
-    
-    function createWrapper(){
-      var wrapper = $( '<div />',{
-        'class': 'vm-swipe-inner'
-      });
-      wrapper.css({
-        'width': getWrapperWidth( element ),
-        'transform': 'translate3d(0px, 0px, 0px)'
-        
-      });
-      return wrapper;
     }
     
     function changePosition( innerWrapper, currentDirection, currentDistance, position ){
@@ -328,6 +337,16 @@
     function calculateDuration() {
       return endTime - startTime;
     }
+    
+    function removeListeners(){
+      $( document ).off( '.vmswipe' );
+      element.off( '.vmswipe' );
+    }
   }
   
 })( jQuery );
+
+
+
+// Работа со ссылками и активным содержимым
+// Инерция
