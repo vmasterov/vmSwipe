@@ -1,0 +1,9 @@
+.vm-swipe {
+  overflow: hidden; }
+
+.vm-swipe.moving {
+  cursor: move; }
+
+.vm-swipe-inner {
+  position: relative;
+  overflow: hidden; }
