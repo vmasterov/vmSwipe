@@ -1,3 +1,4 @@
+<!-- vmSwipe -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -38,7 +39,6 @@
       <button id="refresh" class="mtd mtd-th1">Refresh</button>
     </div>
   </div>
-  
   <div class="swipe-update-block info-block">
     <div class="swipe-update-inner-wrapper info-block-inner-wrapper">
       <div class="swipe-methods-header info-block-header info-block-header-th2"><span>Update block</span></div>
@@ -54,6 +54,27 @@
 <script>
   $( function(){
     $( '.vm-swipe' ).vmSwipe();
+  
+    // Init
+    $( '#init' ).on( 'click', function(){
+      $( '.vm-swipe' ).vmSwipe();
+      
+      changeAttr( [$( '#destroy' ), $( '#add' ), $( '#refresh' ), $( '#remove' )], 'disabled', false );
+      changeAttr( [$( this )], 'disabled', true );
+    });
+    
+    // Destroy
+    $( '#destroy' ).on( 'click', function(){
+      $( '.vm-swipe' ).vmSwipe( 'destroy' );
+      
+      changeAttr( [$( '#init' )], 'disabled', false );
+      changeAttr( [$( this ), $( '#add' ), $( '#refresh' ), $( '#remove' )], 'disabled', true );
+    });
+    
+    // Refresh
+    $( '#refresh' ).on( 'click', function(){
+      $( '.vm-swipe' ).vmSwipe( 'refresh' );
+    });
     
     // Add item
     $( '#add' ).on( 'click', function(){
@@ -79,6 +100,12 @@
     function removeItem( itemForRemove ){
       if( !itemForRemove.length ) alert( 'Nothing to remove' );
       itemForRemove.last().remove();
+    }
+    
+    function changeAttr( array, attr, bool ){
+      for( var i = 0, l = array.length; i < l; i++ ){
+        array[i].attr( attr, bool );
+      }
     }
   });
 </script>
