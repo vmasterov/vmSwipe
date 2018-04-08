@@ -12,37 +12,75 @@
   <!-- Styles -->
 </head>
 <body>
-<div class="swipe-block">
-  <div class="vm-swipe">
-    <div class="block th01">
-      <span>#1 Lorem ipsum</span>
+<div class="h-swipe example-block">
+  <div class="h2">Horizontal swipe</div>
+  <div class="swipe-block">
+    <div class="vm-swipe">
+      <div class="block th01">
+        <span>#1 <a href="http://ya.ru" class="link">Lorem ipsum</a></span>
+      </div>
+      <div class="block th02">
+        <span>#2 Lorem ipsum dolor</span>
+      </div>
+      <div class="block double-width th03">
+        <span>#3 Sapiente similique sit</span>
+      </div>
+      <div class="block th04">
+        <span>#4 Lorem ipsum dolor</span>
+      </div>
     </div>
-    <div class="block th02">
-      <span>#2 Lorem ipsum dolor</span>
+  </div>
+  <div class="controls-block">
+    <div class="swipe-methods-block info-block">
+      <div class="swipe-methods-inner-wrapper info-block-inner-wrapper">
+        <div class="swipe-methods-header info-block-header info-block-header-th1"><span>Methods</span></div>
+        <button class="mtd mtd-th1 init" disabled>Init</button>
+        <button class="mtd mtd-th1 destroy">Destroy</button>
+        <button class="mtd mtd-th1 refresh">Refresh</button>
+      </div>
     </div>
-    <div class="block double-width th03">
-      <span>#3 Sapiente similique sit</span>
-    </div>
-    <div class="block th04">
-      <span>#4 Lorem ipsum dolor</span>
+    <div class="swipe-update-block info-block">
+      <div class="swipe-update-inner-wrapper info-block-inner-wrapper">
+        <div class="swipe-methods-header info-block-header info-block-header-th2"><span>Update block</span></div>
+        <button class="mtd mtd-th2 add">Add items</button>
+        <button class="mtd mtd-th2 remove">Remove items</button>
+      </div>
     </div>
   </div>
 </div>
-
-<div class="controls-block">
-  <div class="swipe-methods-block info-block">
-    <div class="swipe-methods-inner-wrapper info-block-inner-wrapper">
-      <div class="swipe-methods-header info-block-header info-block-header-th1"><span>Methods</span></div>
-      <button id="init" class="mtd mtd-th1" disabled>Init</button>
-      <button id="destroy" class="mtd mtd-th1">Destroy</button>
-      <button id="refresh" class="mtd mtd-th1">Refresh</button>
+<div class="v-swipe example-block">
+  <div class="h2">Vertical swipe</div>
+  <div class="swipe-block">
+    <div class="vm-swipe">
+      <div class="block th01">
+        <span>#1 <a href="http://ya.ru" class="link">Lorem ipsum</a></span>
+      </div>
+      <div class="block th02">
+        <span>#2 Lorem ipsum dolor</span>
+      </div>
+      <div class="block double-width th03">
+        <span>#3 Sapiente similique sit</span>
+      </div>
+      <div class="block th04">
+        <span>#4 Lorem ipsum dolor</span>
+      </div>
     </div>
   </div>
-  <div class="swipe-update-block info-block">
-    <div class="swipe-update-inner-wrapper info-block-inner-wrapper">
-      <div class="swipe-methods-header info-block-header info-block-header-th2"><span>Update block</span></div>
-      <button id="add" class="mtd mtd-th2">Add items</button>
-      <button id="remove" class="mtd mtd-th2">Remove items</button>
+  <div class="controls-block">
+    <div class="swipe-methods-block info-block">
+      <div class="swipe-methods-inner-wrapper info-block-inner-wrapper">
+        <div class="swipe-methods-header info-block-header info-block-header-th1"><span>Methods</span></div>
+        <button class="mtd mtd-th1 init" disabled data-direction="vertical">Init</button>
+        <button class="mtd mtd-th1 destroy" data-direction="vertical">Destroy</button>
+        <button class="mtd mtd-th1 refresh" data-direction="vertical">Refresh</button>
+      </div>
+    </div>
+    <div class="swipe-update-block info-block">
+      <div class="swipe-update-inner-wrapper info-block-inner-wrapper">
+        <div class="swipe-methods-header info-block-header info-block-header-th2"><span>Update block</span></div>
+        <button class="mtd mtd-th2 add" data-direction="vertical">Add items</button>
+        <button class="mtd mtd-th2 remove" data-direction="vertical">Remove items</button>
+      </div>
     </div>
   </div>
 </div>
@@ -52,58 +90,78 @@
 <script src="js/main.js"></script>
 <script>
   $( function(){
-    $( '.vm-swipe' ).vmSwipe();
-  
+    $( '.h-swipe .vm-swipe' ).vmSwipe();
+    $( '.v-swipe .vm-swipe' ).vmSwipe({ direction: 'vertical' });
+    
     // Init
-    $( '#init' ).on( 'click', function(){
-      $( '.vm-swipe' ).vmSwipe();
+    $( '.init' ).on( 'click', function(){
+      var it = $( this ),
+          settings = {
+            direction: it.attr( 'data-direction' ) ? it.attr( 'data-direction' ) : 'horizontal'
+          };
       
-      changeAttr( [$( '#destroy' ), $( '#add' ), $( '#refresh' ), $( '#remove' )], 'disabled', false );
+      it.closest( '.example-block' ).find( '.vm-swipe' ).vmSwipe( settings );
+      
+      changeAttr([
+        it.closest( '.example-block' ).find( '.destroy' ),
+        it.closest( '.example-block' ).find( '.add' ),
+        it.closest( '.example-block' ).find( '.refresh' ),
+        it.closest( '.example-block' ).find( '.remove' )
+      ], 'disabled', false );
       changeAttr( [$( this )], 'disabled', true );
     });
     
     // Destroy
-    $( '#destroy' ).on( 'click', function(){
-      $( '.vm-swipe' ).vmSwipe( 'destroy' );
+    $( '.destroy' ).on( 'click', function(){
+      var it = $( this );
+      it.closest( '.example-block' ).find( '.vm-swipe' ).vmSwipe( 'destroy' );
       
-      changeAttr( [$( '#init' )], 'disabled', false );
-      changeAttr( [$( this ), $( '#add' ), $( '#refresh' ), $( '#remove' )], 'disabled', true );
+      changeAttr( [it.closest( '.example-block' ).find( '.init' )], 'disabled', false );
+      changeAttr([
+        $( this ),
+        it.closest( '.example-block' ).find( '.add' ),
+        it.closest( '.example-block' ).find( '.refresh' ),
+        it.closest( '.example-block' ).find( '.remove' )
+      ], 'disabled', true );
     });
     
     // Refresh
-    $( '#refresh' ).on( 'click', function(){
-      $( '.vm-swipe' ).vmSwipe( 'refresh' );
+    $( '.refresh' ).on( 'click', function(){
+      var it = $( this );
+      it.closest( '.example-block' ).find( '.vm-swipe' ).vmSwipe( 'refresh' );
     });
     
     // Add item
-    $( '#add' ).on( 'click', function(){
-      addItem( $( '.block' ) );
+    $( '.add' ).on( 'click', function(){
+      var it = $( this );
+      addItem( it.closest( '.example-block' ).find( '.block' ) );
     });
+    
+    // Remove item
+    $( '.remove' ).on( 'click', function(){
+      var it = $( this );
+      removeItem( it.closest( '.example-block' ).find( '.block' ) );
+    });
+    
+    
+    // Helpers
     function addItem( itemForClone ){
       if( !itemForClone.length ) alert( 'Nothing to add' );
-      
-      var string = '#' + ( itemForClone.length + 1 ) + ' New item',
-          newItem = itemForClone.last().clone();
-      
+    
+      var string  = '#' + ( itemForClone.length + 1 ) + ' New item', newItem = itemForClone.last().clone();
       itemForClone.parent().append( newItem );
       newItemText( newItem, string );
     }
     function newItemText( newItem, string ){
       newItem.find( 'span' ).html( string );
     }
-    
-    // Remove item
-    $( '#remove' ).on( 'click', function(){
-      removeItem( $( '.block' ) );
-    });
     function removeItem( itemForRemove ){
       if( !itemForRemove.length ) alert( 'Nothing to remove' );
       itemForRemove.last().remove();
     }
-    
     function changeAttr( array, attr, bool ){
       for( var i = 0, l = array.length; i < l; i++ ){
-        array[i].attr( attr, bool );
+        array[ i ].attr( attr, bool );
       }
     }
   });

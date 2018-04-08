@@ -17,7 +17,7 @@
       PHASE_CANCEL = 'cancel';
   
   var defaults = {
-    type: 'scroll'
+    direction: 'horizontal'
   };
   
   $.fn.vmSwipe = function( method ){
@@ -54,7 +54,7 @@
   
   function VmSwipe( element, options ){
     var options = $.extend( {}, options );
-    // console.log( element.data() );
+    
     var supports = {
       transition: null,
       animation: null,
@@ -221,7 +221,8 @@
         'class': 'vm-swipe-inner'
       });
       wrapper.css({
-        'width': getWrapperWidth( element ),
+        'width': ( options.direction === 'horizontal' || options.direction === 'both' ) ? getWrapperWidth( element ) : '',
+        'height': ( options.direction === 'vertical' || options.direction === 'both' ) ? getWrapperHeight( element ) : '',
         'transform': 'translate3d(0px, 0px, 0px)'
       
       });
@@ -237,6 +238,17 @@
       });
     
       return width;
+    }
+    
+    function getWrapperHeight( element ){
+      var height = 0;
+    
+      element.children().each( function(){
+        var it = $( this );
+        height += it.outerHeight( true );
+      });
+    
+      return height;
     }
     
     function createFingerData( event ) {
@@ -273,15 +285,27 @@
     }
     
     function changePosition( innerWrapper, currentDirection, currentDistance, position ){
-      var dist = ( currentDirection === 'left' || currentDirection === 'down' ) ? -currentDistance : currentDistance,
-          wrapperHeight;
+      var distance = ( currentDirection === 'left' || currentDirection === 'up' ) ? -currentDistance : currentDistance;
       
-      if( currentDirection === 'up' || currentDirection === 'down' ) return;
       
-      if( currentDirection === 'left' || currentDirection === 'right' ){
-        position.x += dist;
-        changeHorizontalPosition( innerWrapper, innerWrapper.outerWidth(), position );
+      if( options.direction === 'horizontal' ){
+        position.x += distance;
+        // console.log( position.x, distance );
+        if( currentDirection === 'up' || currentDirection === 'down' ) return;
+        if( currentDirection === 'left' || currentDirection === 'right' ) changeHorizontalPosition( innerWrapper, innerWrapper.outerWidth(), position );
       }
+  
+      if( options.direction === 'vertical' ){
+        position.y += distance;
+        // console.log( position.y, distance );
+        if( currentDirection === 'up' || currentDirection === 'down' ) changeVerticalPosition( innerWrapper, innerWrapper.outerHeight(), position );
+        if( currentDirection === 'left' || currentDirection === 'right' ) return;
+      }
+      
+      /*if( currentDirection === 'up' || currentDirection === 'down' ) return;
+      if( currentDirection === 'left' || currentDirection === 'right' ){
+        changeHorizontalPosition( innerWrapper, innerWrapper.outerWidth(), position );
+      }*/
     }
     
     function changeHorizontalPosition( innerWrapper, wrapperWidth, position ){
@@ -289,6 +313,21 @@
       if( Math.abs( position.x ) > ( wrapperWidth - element.outerWidth() ) ) position.x = -( wrapperWidth - element.outerWidth() );
       
       innerWrapper.css({ 'transform': 'translate3d(' + position.x  + 'px, 0px, 0px)' });
+      // console.log( innerWrapper.css('transform'), position.x );
+    }
+    
+    function changeVerticalPosition( innerWrapper, wrapperHeight, position ){
+      if( position.y > 0 ) position.y = 0;
+      if( Math.abs( position.y ) > ( wrapperHeight - element.outerHeight() ) ){
+        console.log( wrapperHeight, element.height() );
+        setTimeout( function(){
+          console.log( wrapperHeight, element.height() );
+        },500)
+        position.y = -( wrapperHeight - element.outerHeight() );
+      }
+      
+      innerWrapper.css({ 'transform': 'translate3d(0px, ' + position.y  + 'px, 0px)' });
+      // console.log( innerWrapper.css('transform'), position.y );
     }
     
     function support( values ){
