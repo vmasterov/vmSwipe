@@ -77,6 +77,9 @@
     // Finger data object
     var fingerData = {};
     
+    // Direction of swipe (horizontal, vertical, both)
+    var swipeDirection = options.direction;
+    
     // Support css properties
     support( supports );
     
@@ -115,8 +118,24 @@
       innerWrapper.children().unwrap();
     };
     this.refresh = function(){
-      innerWrapper.width( getWrapperWidth( innerWrapper ) );
-      changeHorizontalPosition( innerWrapper, innerWrapper.outerWidth(), position );
+      switch( swipeDirection ){
+        case 'horizontal':
+          console.log( 0 );
+          innerWrapper.width( getWrapperWidth( innerWrapper ) );
+          position.x = changeAllPosition( innerWrapper.outerWidth(), element.outerWidth(), position.x );
+          innerWrapper.css({ 'transform': 'translate3d(' + position.x  + 'px, 0px, 0px)' });
+          break;
+          
+        case 'vertical':
+          console.log( 1 );
+          innerWrapper.height( getWrapperHeight( innerWrapper ) );
+          position.y = changeAllPosition( innerWrapper.outerHeight(), element.outerHeight(), position.y );
+          innerWrapper.css({ 'transform': 'translate3d(0px, ' + position.y  + 'px, 0px)' });
+          break;
+          
+        case 'both':
+          break;
+      }
     };
     
     function touchStart( event ){
@@ -288,47 +307,46 @@
       var distance = ( currentDirection === 'left' || currentDirection === 'up' ) ? -currentDistance : currentDistance;
       
       
-      if( options.direction === 'horizontal' ){
-        position.x += distance;
-        // console.log( position.x, distance );
+      // if( options.direction === 'horizontal' ){
+      if( swipeDirection === 'horizontal' ){
         if( currentDirection === 'up' || currentDirection === 'down' ) return;
-        if( currentDirection === 'left' || currentDirection === 'right' ) changeHorizontalPosition( innerWrapper, innerWrapper.outerWidth(), position );
+        
+        position.x += distance;
+        // changeHorizontalPosition( innerWrapper, innerWrapper.outerWidth(), position );
+        position.x = changeAllPosition( innerWrapper.outerWidth(), element.outerWidth(), position.x );
+        innerWrapper.css({ 'transform': 'translate3d(' + position.x  + 'px, 0px, 0px)' });
       }
   
-      if( options.direction === 'vertical' ){
-        position.y += distance;
-        // console.log( position.y, distance );
-        if( currentDirection === 'up' || currentDirection === 'down' ) changeVerticalPosition( innerWrapper, innerWrapper.outerHeight(), position );
+      // if( options.direction === 'vertical' ){
+      if( swipeDirection === 'vertical' ){
         if( currentDirection === 'left' || currentDirection === 'right' ) return;
+        
+        position.y += distance;
+        // changeVerticalPosition( innerWrapper, innerWrapper.outerHeight(), position );
+        position.y = changeAllPosition( innerWrapper.outerHeight(), element.outerHeight(), position.y );
+        innerWrapper.css({ 'transform': 'translate3d(0px, ' + position.y  + 'px, 0px)' });
       }
-      
-      /*if( currentDirection === 'up' || currentDirection === 'down' ) return;
-      if( currentDirection === 'left' || currentDirection === 'right' ){
-        changeHorizontalPosition( innerWrapper, innerWrapper.outerWidth(), position );
-      }*/
     }
     
-    function changeHorizontalPosition( innerWrapper, wrapperWidth, position ){
-      if( position.x > 0 ) position.x = 0;
-      if( Math.abs( position.x ) > ( wrapperWidth - element.outerWidth() ) ) position.x = -( wrapperWidth - element.outerWidth() );
-      
-      innerWrapper.css({ 'transform': 'translate3d(' + position.x  + 'px, 0px, 0px)' });
-      // console.log( innerWrapper.css('transform'), position.x );
+    function changeAllPosition( wrapperDimensions, elementDimentions, position ){
+      if( position > 0 ) position = 0;
+      if( Math.abs( position ) > ( wrapperDimensions - elementDimentions ) ) position = -( wrapperDimensions - elementDimentions );
+      return position;
     }
     
-    function changeVerticalPosition( innerWrapper, wrapperHeight, position ){
-      if( position.y > 0 ) position.y = 0;
-      if( Math.abs( position.y ) > ( wrapperHeight - element.outerHeight() ) ){
-        console.log( wrapperHeight, element.height() );
-        setTimeout( function(){
-          console.log( wrapperHeight, element.height() );
-        },500)
-        position.y = -( wrapperHeight - element.outerHeight() );
-      }
-      
-      innerWrapper.css({ 'transform': 'translate3d(0px, ' + position.y  + 'px, 0px)' });
-      // console.log( innerWrapper.css('transform'), position.y );
-    }
+    // function changeHorizontalPosition( innerWrapper, wrapperWidth, position ){
+    //   if( position.x > 0 ) position.x = 0;
+    //   if( Math.abs( position.x ) > ( wrapperWidth - element.outerWidth() ) ) position.x = -( wrapperWidth - element.outerWidth() );
+    //
+    //   innerWrapper.css({ 'transform': 'translate3d(' + position.x  + 'px, 0px, 0px)' });
+    // }
+    
+    // function changeVerticalPosition( innerWrapper, wrapperHeight, position ){
+    //   if( position.y > 0 ) position.y = 0;
+    //   if( Math.abs( position.y ) > ( wrapperHeight - element.outerHeight() ) ) position.y = -( wrapperHeight - element.outerHeight() );
+    //
+    //   innerWrapper.css({ 'transform': 'translate3d(0px, ' + position.y  + 'px, 0px)' });
+    // }
     
     function support( values ){
       var styles = $( '<support />' ).get( 0 ).style;
@@ -387,5 +405,5 @@
 
 
 
-// Работа со ссылками и активным содержимым
+// Вертикальный скролл
 // Инерция
