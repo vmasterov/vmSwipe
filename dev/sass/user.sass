@@ -7,10 +7,6 @@
   box-sizing: border-box
   background-color: #d8e6ec
 
-.v-swipe
-  .swipe-block
-    height: 300px
-
 .th01
   background-color: #2e93ba
 
@@ -121,7 +117,8 @@ button[disabled], button[disabled]:hover
   text-transform: uppercase
 
 .example-block
-  margin: 0 auto
+  margin: 0 auto 40px
+  padding-bottom: 50px
   width: 50%
   .example-block-content
     overflow: hidden
@@ -138,13 +135,6 @@ button[disabled], button[disabled]:hover
   .swipe-block
     width: 100%
 
-  /*button.mtd
-    display: block
-    width: 90%
-    margin: 0 auto 15px
-    &:last-child
-      margin-bottom: 0*/
-
 @media( max-width: 1510px )
   .example-block .example-block-content
     > *
@@ -154,6 +144,9 @@ button[disabled], button[disabled]:hover
       padding-left: 0
 
 @media( max-width: 768px )
+  .example-block
+    width: 95%
+
   button.mtd
     width: 100%
     margin-bottom: 15px
