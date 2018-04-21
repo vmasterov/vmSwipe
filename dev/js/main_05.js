@@ -201,8 +201,6 @@
           break;
     
         case 'both':
-          position.x = getPosition( innerWrapper.outerWidth(), element.outerWidth(), position.x );
-          position.y = getPosition( innerWrapper.outerHeight(), element.outerHeight(), position.y );
           break;
       }
   
@@ -321,48 +319,52 @@
     }
     
     function changePosition( innerWrapper, currentDirection, currentDistance, position ){
-      switch( swipeDirection ){
-        case 'horizontal':
-          if( currentDirection === 'up' || currentDirection === 'down' ) return;
-          position.x += currentDistance.x;
-          position.x = getPosition( innerWrapper.outerWidth(), element.outerWidth(), position.x );
-          break;
-  
-        case 'vertical':
-          if( currentDirection === 'left' || currentDirection === 'right' ) return;
-          position.y += currentDistance.y;
-          position.y = getPosition( innerWrapper.outerHeight(), element.outerHeight(), position.y );
-          break;
-  
-        case 'both':
-          position.x += currentDistance.x;
-          position.y += currentDistance.y;
-          position.x = getPosition( innerWrapper.outerWidth(), element.outerWidth(), position.x );
-          position.y = getPosition( innerWrapper.outerHeight(), element.outerHeight(), position.y );
-          break;
+      if( swipeDirection === 'horizontal' ){
+        if( currentDirection === 'up' || currentDirection === 'down' ) return;
+        position.x += currentDistance.x;
+        position.x = getPosition( innerWrapper.outerWidth(), element.outerWidth(), position.x );
       }
       
+      if( swipeDirection === 'vertical' ){
+        if( currentDirection === 'left' || currentDirection === 'right' ) return;
+        position.y += currentDistance.y;
+        position.y = getPosition( innerWrapper.outerHeight(), element.outerHeight(), position.y );
+      }
+  
+      if( swipeDirection === 'both' ){
+          position.x += currentDistance.x;
+          position.y += currentDistance.y;
+          position.y = getPosition( innerWrapper.outerHeight(), element.outerHeight(), position.y );
+          position.x = getPosition( innerWrapper.outerWidth(), element.outerWidth(), position.x );
+      }
+      
+      innerWrapper.css({ 'transform': 'translate3d(' + position.x  + 'px, ' + position.y  + 'px, 0px)' });
+  
+  
+      // var distance = ( currentDirection === 'left' || currentDirection === 'up' ) ? -currentDistance : currentDistance;
+      // var distance = currentDistance;
       // if( swipeDirection === 'horizontal' ){
       //   if( currentDirection === 'up' || currentDirection === 'down' ) return;
-      //   position.x += currentDistance.x;
+      //   // position.x += distance;
+      //   position.x += distance.x;
       //   position.x = getPosition( innerWrapper.outerWidth(), element.outerWidth(), position.x );
       // }
       // if( swipeDirection === 'vertical' ){
       //   if( currentDirection === 'left' || currentDirection === 'right' ) return;
-      //   position.y += currentDistance.y;
+      //   // position.y += distance;
+      //   position.y += distance.y;
       //   position.y = getPosition( innerWrapper.outerHeight(), element.outerHeight(), position.y );
       // }
       // if( swipeDirection === 'both' ){
-      //     position.x += currentDistance.x;
-      //     position.y += currentDistance.y;
-      //     position.x = getPosition( innerWrapper.outerWidth(), element.outerWidth(), position.x );
-      //     position.y = getPosition( innerWrapper.outerHeight(), element.outerHeight(), position.y );
+      //   position.x += distance.x;
+      //   position.x = getPosition( innerWrapper.outerWidth(), element.outerWidth(), position.x );
+      //   position.y += distance.y;
+      //   position.y = getPosition( innerWrapper.outerHeight(), element.outerHeight(), position.y );
       // }
-      innerWrapper.css({ 'transform': 'translate3d(' + position.x  + 'px, ' + position.y  + 'px, 0px)' });
+      // innerWrapper.css({ 'transform': 'translate3d(' + position.x  + 'px, ' + position.y  + 'px, 0px)' });
     }
     
     function getPosition( wrapperDimensions, elementDimentions, position ){
-      if( wrapperDimensions <= elementDimentions ) return 0;
       if( position > 0 ) position = 0;
       if( Math.abs( position ) > ( wrapperDimensions - elementDimentions ) ) position = -( wrapperDimensions - elementDimentions );
       return position;
