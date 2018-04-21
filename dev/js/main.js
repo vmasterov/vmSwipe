@@ -130,6 +130,10 @@
           break;
           
         case 'both':
+          innerWrapper.width( getWrapperWidth( innerWrapper ) );
+          innerWrapper.height( getWrapperHeight( innerWrapper ) );
+          position.x = getPosition( innerWrapper.outerWidth(), element.outerWidth(), position.x );
+          position.y = getPosition( innerWrapper.outerHeight(), element.outerHeight(), position.y );
           break;
       }
   
@@ -315,21 +319,49 @@
     }
     
     function changePosition( innerWrapper, currentDirection, currentDistance, position ){
-      var distance = ( currentDirection === 'left' || currentDirection === 'up' ) ? -currentDistance : currentDistance;
-      
       if( swipeDirection === 'horizontal' ){
         if( currentDirection === 'up' || currentDirection === 'down' ) return;
-        position.x += distance;
+        position.x += currentDistance.x;
         position.x = getPosition( innerWrapper.outerWidth(), element.outerWidth(), position.x );
       }
       
       if( swipeDirection === 'vertical' ){
         if( currentDirection === 'left' || currentDirection === 'right' ) return;
-        position.y += distance;
+        position.y += currentDistance.y;
         position.y = getPosition( innerWrapper.outerHeight(), element.outerHeight(), position.y );
+      }
+  
+      if( swipeDirection === 'both' ){
+          position.x += currentDistance.x;
+          position.y += currentDistance.y;
+          position.y = getPosition( innerWrapper.outerHeight(), element.outerHeight(), position.y );
+          position.x = getPosition( innerWrapper.outerWidth(), element.outerWidth(), position.x );
       }
       
       innerWrapper.css({ 'transform': 'translate3d(' + position.x  + 'px, ' + position.y  + 'px, 0px)' });
+  
+  
+      // var distance = ( currentDirection === 'left' || currentDirection === 'up' ) ? -currentDistance : currentDistance;
+      // var distance = currentDistance;
+      // if( swipeDirection === 'horizontal' ){
+      //   if( currentDirection === 'up' || currentDirection === 'down' ) return;
+      //   // position.x += distance;
+      //   position.x += distance.x;
+      //   position.x = getPosition( innerWrapper.outerWidth(), element.outerWidth(), position.x );
+      // }
+      // if( swipeDirection === 'vertical' ){
+      //   if( currentDirection === 'left' || currentDirection === 'right' ) return;
+      //   // position.y += distance;
+      //   position.y += distance.y;
+      //   position.y = getPosition( innerWrapper.outerHeight(), element.outerHeight(), position.y );
+      // }
+      // if( swipeDirection === 'both' ){
+      //   position.x += distance.x;
+      //   position.x = getPosition( innerWrapper.outerWidth(), element.outerWidth(), position.x );
+      //   position.y += distance.y;
+      //   position.y = getPosition( innerWrapper.outerHeight(), element.outerHeight(), position.y );
+      // }
+      // innerWrapper.css({ 'transform': 'translate3d(' + position.x  + 'px, ' + position.y  + 'px, 0px)' });
     }
     
     function getPosition( wrapperDimensions, elementDimentions, position ){
@@ -378,7 +410,14 @@
     }
     
     function calculateDistance( startPoint, endPoint ) {
-      return Math.round( Math.sqrt( Math.pow( endPoint.x - startPoint.x, 2 ) + Math.pow( endPoint.y - startPoint.y, 2 ) ) );
+      // calculate distance
+      // return Math.round( Math.sqrt( Math.pow( endPoint.x - startPoint.x, 2 ) + Math.pow( endPoint.y - startPoint.y, 2 ) ) );
+      
+      // calculate current distance
+      return {
+        x: startPoint.x - endPoint.x,
+        y: startPoint.y - endPoint.y
+      }
     }
     
     function calculateDuration() {

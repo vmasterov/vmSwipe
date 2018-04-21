@@ -39,6 +39,15 @@
   .v-swipe .block:last-child {
     margin-bottom: 0; }
 
+.both-swipe .block {
+  margin: 0 0 10px 0;
+  width: 604px;
+  height: 436px;
+  float: none;
+  background-image: url("../img/cat.jpg"); }
+  .both-swipe .block:last-child {
+    margin-bottom: 0; }
+
 .block span {
   color: #fff;
   font-size: 30px;
