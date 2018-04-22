@@ -51,7 +51,8 @@
 .block span {
   color: #fff;
   font-size: 30px;
-  line-height: 200px; }
+  line-height: 200px;
+  visibility: hidden; }
 
 button.mtd {
   font-size: 14px;

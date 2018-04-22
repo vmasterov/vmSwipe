@@ -72,6 +72,7 @@
         direction = null,
         currentDirection = null,
         duration = 0,
+        speed = 0,
         startPosition = 0;
     
     // Finger data object
@@ -148,18 +149,24 @@
       event = touches ? touches[0] : event;
       
       phase = PHASE_START;
-      
+  
       distance = 0;
+      currentDistance = 0;
       direction = null;
       currentDirection = null;
       duration = 0;
+      startTime = 0;
+      endTime = 0;
+      speed = 0;
   
       element.toggleClass( 'moving', event.type === 'mousedown');
       
       getCurrentPosition();
       createFingerData( event );
       
-      startTime = getTimeStamp();
+      // startTime = getTimeStamp();
+  
+      innerWrapper.stop();
       
       $( document ).on( 'touchend.vmswipe mouseup.vmswipe', $.proxy( touchEnd, element ) );
       $( document ).on( 'touchmove.vmswipe mousemove.vmswipe', $.proxy( touchMove, element ) );
@@ -173,21 +180,36 @@
       
       updateFingerData( event );
       
+      startSwipeTime();
+      function startSwipeTime(){
+        if( endTime )return;
+        startTime = getTimeStamp();
+        // console.log( 'endTime:', endTime, 'startTime:', startTime );
+      }
+      
       endTime = getTimeStamp();
       phase = PHASE_MOVE;
       currentDirection = calculateDirection( fingerData.last, fingerData.end );
-      currentDistance= calculateDistance( fingerData.end, fingerData.last );
+      distance = calculateDistance( fingerData.end, fingerData.start );
+      currentDistance = calculateCurrentDistance( fingerData.end, fingerData.last );
       
       changePosition( innerWrapper, currentDirection, currentDistance, position );
     }
     
     function touchEnd( event ){
+      endTime = getTimeStamp();
       duration = calculateDuration();
+      speed = calculateSpeed( distance, duration );
       
+      inertia();
+      
+      // console.log( 'distance:', distance, 'duration:', duration, 'endTime:', endTime, 'startTime:', startTime );
+      // console.log( 'speed:', ( speed ).toFixed( 2 ) );
+  
       element.removeClass( 'moving' );
       
       $( document ).off( 'touchmove.vmswipe mousemove.vmswipe', $.proxy( touchMove, element ) );
-      $( document ).off( 'touchmove.vmswipe mousemove.vmswipe', $.proxy( touchEnd, element ) );
+      $( document ).off( 'touchend.vmswipe mouseup.vmswipe', $.proxy( touchEnd, element ) );
     }
     
     winWidthResize( null, function(){
@@ -358,7 +380,7 @@
       //     position.x = getPosition( innerWrapper.outerWidth(), element.outerWidth(), position.x );
       //     position.y = getPosition( innerWrapper.outerHeight(), element.outerHeight(), position.y );
       // }
-      innerWrapper.css({ 'transform': 'translate3d(' + position.x  + 'px, ' + position.y  + 'px, 0px)' });
+      innerWrapper.css({ 'transform': 'translate3d(' + position.x + 'px, ' + position.y + 'px, 0px)' });
     }
     
     function getPosition( wrapperDimensions, elementDimentions, position ){
@@ -407,24 +429,66 @@
       return angle;
     }
     
-    function calculateDistance( startPoint, endPoint ) {
-      // calculate distance
-      // return Math.round( Math.sqrt( Math.pow( endPoint.x - startPoint.x, 2 ) + Math.pow( endPoint.y - startPoint.y, 2 ) ) );
-      
-      // calculate current distance
+    function calculateDistance( startPoint, endPoint ){
+      return Math.round( Math.sqrt( Math.pow( endPoint.x - startPoint.x, 2 ) + Math.pow( endPoint.y - startPoint.y, 2 ) ) );
+    }
+    
+    function calculateCurrentDistance( startPoint, endPoint ){
       return {
         x: startPoint.x - endPoint.x,
         y: startPoint.y - endPoint.y
       }
     }
     
+    function calculateSpeed( distance, time ){
+      return distance / time;
+    }
+    
     function calculateDuration() {
-      return endTime - startTime;
+      var duration;
+      if( !startTime ) duration = 0;
+      else duration = endTime - startTime;
+      return duration;
     }
     
     function removeListeners(){
       $( document ).off( '.vmswipe' );
       element.off( '.vmswipe' );
+    }
+    
+    function inertia(){
+      innerWrapper.css({'text-indent': 100});
+      innerWrapper.animate({
+        textIndent: 0
+      },
+      {
+        duration: speed * 3000,
+        step: function( currentStep ){
+          // changePosition( innerWrapper, currentDirection, currentDistance, position );
+          
+          speed *= ( currentStep / 100 );
+          var now = getTimeStamp();
+          var stepDuration = ( now - endTime );
+          endTime = now;
+  
+          getCurrentPosition();
+          var r = ( currentDirection === 'left' ) ? -(speed * stepDuration) : speed * stepDuration;
+          var f = {};
+          f.x = r;
+          // var newLeft = position.x + (-(speed * stepDuration));
+          // var newLeft = position.x + r ;
+          var newTop = (position.y + (speed * stepDuration));
+  
+  
+          changePosition( innerWrapper, currentDirection, f, position );
+          // newLeft = getPosition( innerWrapper.outerWidth(), element.outerWidth(), newLeft );
+  
+          // innerWrapper.css({ 'transform': 'translate3d(' + newLeft + 'px, 0px, 0px)' });
+          
+          // console.log( position.x, speed, stepDuration, newLeft );
+          console.log( speed * stepDuration, speed , stepDuration );
+        }
+      });
     }
   }
   
@@ -433,4 +497,3 @@
 
 
 // Инерция
-// Если внешний блок шире контента — destroy
