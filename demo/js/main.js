@@ -68,11 +68,11 @@
     
     //touch properties
     var distance = 0,
-        currentDistance = 0,
+        currentDistance = null,
         direction = null,
         currentDirection = null,
-        duration = 0,
-        speed = 0,
+        duration = {},
+        speed = {},
         startPosition = 0;
     
     // Finger data object
@@ -90,6 +90,7 @@
     //track times
     var startTime = 0,
         endTime = 0,
+        endMoveTime = 0,
         previousTouchEndTime = 0;
     
     // Add wrapper
@@ -154,10 +155,10 @@
       currentDistance = 0;
       direction = null;
       currentDirection = null;
-      duration = 0;
+      duration = {};
       startTime = 0;
       endTime = 0;
-      speed = 0;
+      speed = {};
   
       element.toggleClass( 'moving', event.type === 'mousedown');
       
@@ -184,14 +185,15 @@
       function startSwipeTime(){
         if( endTime )return;
         startTime = getTimeStamp();
-        // console.log( 'endTime:', endTime, 'startTime:', startTime );
       }
       
       endTime = getTimeStamp();
+      endMoveTime = getTimeStamp();
       phase = PHASE_MOVE;
       currentDirection = calculateDirection( fingerData.last, fingerData.end );
-      distance = calculateDistance( fingerData.end, fingerData.start );
+      // distance = calculateDistance( fingerData.end, fingerData.start );
       currentDistance = calculateCurrentDistance( fingerData.end, fingerData.last );
+      distance = calculateCurrentDistance( fingerData.end, fingerData.start ); // это объект, проверить по коду
       
       changePosition( innerWrapper, currentDirection, currentDistance, position );
     }
@@ -200,11 +202,8 @@
       endTime = getTimeStamp();
       duration = calculateDuration();
       speed = calculateSpeed( distance, duration );
-      
-      inertia();
-      
-      // console.log( 'distance:', distance, 'duration:', duration, 'endTime:', endTime, 'startTime:', startTime );
-      // console.log( 'speed:', ( speed ).toFixed( 2 ) );
+  
+      if( ( endTime - endMoveTime ) < 100 ) inertia();
   
       element.removeClass( 'moving' );
       
@@ -361,25 +360,12 @@
           position.y += currentDistance.y;
           position.x = getPosition( innerWrapper.outerWidth(), element.outerWidth(), position.x );
           position.y = getPosition( innerWrapper.outerHeight(), element.outerHeight(), position.y );
+  
+          // console.log( position.x, position.y );
+          // console.log( position.y, currentDistance.y );
           break;
       }
       
-      // if( swipeDirection === 'horizontal' ){
-      //   if( currentDirection === 'up' || currentDirection === 'down' ) return;
-      //   position.x += currentDistance.x;
-      //   position.x = getPosition( innerWrapper.outerWidth(), element.outerWidth(), position.x );
-      // }
-      // if( swipeDirection === 'vertical' ){
-      //   if( currentDirection === 'left' || currentDirection === 'right' ) return;
-      //   position.y += currentDistance.y;
-      //   position.y = getPosition( innerWrapper.outerHeight(), element.outerHeight(), position.y );
-      // }
-      // if( swipeDirection === 'both' ){
-      //     position.x += currentDistance.x;
-      //     position.y += currentDistance.y;
-      //     position.x = getPosition( innerWrapper.outerWidth(), element.outerWidth(), position.x );
-      //     position.y = getPosition( innerWrapper.outerHeight(), element.outerHeight(), position.y );
-      // }
       innerWrapper.css({ 'transform': 'translate3d(' + position.x + 'px, ' + position.y + 'px, 0px)' });
     }
     
@@ -441,7 +427,10 @@
     }
     
     function calculateSpeed( distance, time ){
-      return distance / time;
+      return {
+        x: distance.x / time,
+        y: distance.y / time
+      }
     }
     
     function calculateDuration() {
@@ -462,31 +451,21 @@
         textIndent: 0
       },
       {
-        duration: speed * 3000,
+        duration: ( Math.max( Math.abs( speed.x ), Math.abs( speed.y ) ) * 3000 ),
         step: function( currentStep ){
-          // changePosition( innerWrapper, currentDirection, currentDistance, position );
+          var thisStepTime = getTimeStamp(),
+              stepDuration = thisStepTime - endTime;
           
-          speed *= ( currentStep / 100 );
-          var now = getTimeStamp();
-          var stepDuration = ( now - endTime );
-          endTime = now;
-  
-          getCurrentPosition();
-          var r = ( currentDirection === 'left' ) ? -(speed * stepDuration) : speed * stepDuration;
-          var f = {};
-          f.x = r;
-          // var newLeft = position.x + (-(speed * stepDuration));
-          // var newLeft = position.x + r ;
-          var newTop = (position.y + (speed * stepDuration));
-  
-  
-          changePosition( innerWrapper, currentDirection, f, position );
-          // newLeft = getPosition( innerWrapper.outerWidth(), element.outerWidth(), newLeft );
-  
-          // innerWrapper.css({ 'transform': 'translate3d(' + newLeft + 'px, 0px, 0px)' });
+          endTime = thisStepTime;
+          speed.x *= currentStep / 100;
+          speed.y *= currentStep / 100;
           
-          // console.log( position.x, speed, stepDuration, newLeft );
-          console.log( speed * stepDuration, speed , stepDuration );
+          // getCurrentPosition();
+  
+          currentDistance.x = speed.x * stepDuration;
+          currentDistance.y = speed.y * stepDuration;
+    
+          changePosition( innerWrapper, currentDirection, currentDistance, position );
         }
       });
     }

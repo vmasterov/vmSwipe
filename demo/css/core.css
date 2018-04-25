@@ -9,3 +9,6 @@
 .vm-swipe-inner {
   position: relative;
   overflow: hidden; }
+
+.vm-swipe-inner > * {
+  text-indent: 0; }
