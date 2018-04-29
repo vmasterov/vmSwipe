@@ -6,18 +6,12 @@
       UP = 'up',
       DOWN = 'down',
   
-      NONE = 'none',
-  
-      HORIZONTAL = 'horizontal',
-      VERTICAL = 'vertical',
-  
-      PHASE_START = 'start',
-      PHASE_MOVE = 'move',
-      PHASE_END = 'end',
-      PHASE_CANCEL = 'cancel';
+      NONE = 'none';
   
   var defaults = {
-    direction: 'horizontal'
+    direction: 'horizontal',
+    inertiaMaxWidth: 1030,
+    inertiaThreshold: 25
   };
   
   $.fn.vmSwipe = function( method ){
@@ -66,14 +60,13 @@
       y: 0
     };
     
-    //touch properties
+    // Touch properties
     var distance = 0,
         currentDistance = null,
         direction = null,
         currentDirection = null,
         duration = {},
-        speed = {},
-        startPosition = 0;
+        speed = {};
     
     // Finger data object
     var fingerData = {};
@@ -84,36 +77,28 @@
     // Support css properties
     support( supports );
     
-    //Current phase of th touch cycle
-    var phase = "start";
-    
-    //track times
+    // Track times
     var startTime = 0,
         endTime = 0,
-        endMoveTime = 0,
-        previousTouchEndTime = 0;
+        endMoveTime = 0;
+  
+    // Inertia mobile
+    var withoutInertia,
+        startTimeMobile;
     
     // Add wrapper
     wrapContent( element );
     var innerWrapper = element.find( '.vm-swipe-inner' );
     
-    // Add item classes
-    // element.children().addClass( 'vm-swipe-item' );
-    
     try {
       element.on( 'touchstart.vmswipe mousedown.vmswipe', touchStart );
       element.on( 'touchcancel.vmswipe', touchEnd );
-    } catch (e) {
-      $.error('events not supported ' + startEvent + ',' + cancelEvent + ' on jQuery.swipe');
+    }
+    catch( event ){
+      $.error( 'events not supported on jQuery.swipe' );
     }
     
     // Public methods
-    this.showData = function(){
-      console.log( 'showData: ', $( this ).data( PLUGIN_NS ) );
-    };
-    this.setData = function( str ){
-      console.log( 'Your data is: ' + str );
-    };
     this.destroy = function(){
       removeListeners();
       element.data( PLUGIN_NS, null );
@@ -148,8 +133,6 @@
       
       var touches = event.touches;
       event = touches ? touches[0] : event;
-      
-      phase = PHASE_START;
   
       distance = 0;
       currentDistance = 0;
@@ -159,20 +142,19 @@
       startTime = 0;
       endTime = 0;
       speed = {};
+      withoutInertia = null;
+      startTimeMobile = 0;
   
       element.toggleClass( 'moving', event.type === 'mousedown');
       
       getCurrentPosition();
       createFingerData( event );
-      
-      // startTime = getTimeStamp();
   
       innerWrapper.stop();
       
       $( document ).on( 'touchend.vmswipe mouseup.vmswipe', $.proxy( touchEnd, element ) );
       $( document ).on( 'touchmove.vmswipe mousemove.vmswipe', $.proxy( touchMove, element ) );
     }
-    
     function touchMove( event ){
       event = event.originalEvent ? event.originalEvent : event;
       
@@ -180,31 +162,22 @@
       event = touches ? touches[0] : event;
       
       updateFingerData( event );
-      
       startSwipeTime();
-      function startSwipeTime(){
-        if( endTime )return;
-        startTime = getTimeStamp();
-      }
       
-      endTime = getTimeStamp();
-      endMoveTime = getTimeStamp();
-      phase = PHASE_MOVE;
+      endTime = endMoveTime = getTimeStamp();
       currentDirection = calculateDirection( fingerData.last, fingerData.end );
-      // distance = calculateDistance( fingerData.end, fingerData.start );
       currentDistance = calculateCurrentDistance( fingerData.end, fingerData.last );
-      distance = calculateCurrentDistance( fingerData.end, fingerData.start ); // это объект, проверить по коду
+      distance = calculateCurrentDistance( fingerData.end, fingerData.start );
+      withoutInertia = isReallyFingerMoving();
       
       changePosition( innerWrapper, currentDirection, currentDistance, position );
     }
-    
-    function touchEnd( event ){
+    function touchEnd(){
       endTime = getTimeStamp();
       duration = calculateDuration();
       speed = calculateSpeed( distance, duration );
   
-      if( ( endTime - endMoveTime ) < 100 ) inertia();
-  
+      inertia();
       element.removeClass( 'moving' );
       
       $( document ).off( 'touchmove.vmswipe mousemove.vmswipe', $.proxy( touchMove, element ) );
@@ -231,7 +204,6 @@
     });
     
     
-    
     // Helpers
     function winWidthResize( context, func ){
       var timerId,
@@ -251,7 +223,6 @@
         }, 150);
       });
     }
-    
     function getCurrentPosition(){
       if( supports.transform ){
         position = innerWrapper.css( 'transform' ).replace( /.*\(|\)| /g, '' ).split( ',' );
@@ -268,11 +239,9 @@
         };
       }
     }
-    
-    function wrapContent( element, wrapper ){
+    function wrapContent( element ){
       element.contents().wrapAll( createWrapper() );
     }
-    
     function createWrapper(){
       var wrapper = $( '<div />',{
         'class': 'vm-swipe-inner'
@@ -285,7 +254,6 @@
       });
       return wrapper;
     }
-  
     function getWrapperWidth( element ){
       var width = 0;
     
@@ -296,7 +264,6 @@
     
       return width;
     }
-    
     function getWrapperHeight( element ){
       var height = 0;
     
@@ -307,7 +274,6 @@
     
       return height;
     }
-    
     function createFingerData( event ) {
       var f = {
         start: {
@@ -328,7 +294,6 @@
       fingerData = f;
       return f;
     }
-    
     function updateFingerData( event ){
       if ( !Object.keys( fingerData ).length ) createFingerData( event );
       
@@ -340,7 +305,6 @@
       
       return fingerData;
     }
-    
     function changePosition( innerWrapper, currentDirection, currentDistance, position ){
       switch( swipeDirection ){
         case 'horizontal':
@@ -360,33 +324,26 @@
           position.y += currentDistance.y;
           position.x = getPosition( innerWrapper.outerWidth(), element.outerWidth(), position.x );
           position.y = getPosition( innerWrapper.outerHeight(), element.outerHeight(), position.y );
-  
-          // console.log( position.x, position.y );
-          // console.log( position.y, currentDistance.y );
           break;
       }
       
       innerWrapper.css({ 'transform': 'translate3d(' + position.x + 'px, ' + position.y + 'px, 0px)' });
     }
-    
     function getPosition( wrapperDimensions, elementDimentions, position ){
       if( wrapperDimensions <= elementDimentions ) return 0;
       if( position > 0 ) position = 0;
       if( Math.abs( position ) > ( wrapperDimensions - elementDimentions ) ) position = -( wrapperDimensions - elementDimentions );
       return position;
     }
-    
     function support( values ){
       var styles = $( '<support />' ).get( 0 ).style;
       $.each( values, function( key, value ){
         if( styles[key] !== undefined ) values[key] = true;
       });
     }
-    
     function getTimeStamp() {
       return new Date().getTime();
     }
-    
     function calculateDirection( startPoint, endPoint ){
       if( comparePoints( startPoint, endPoint ) ) return NONE;
       
@@ -398,11 +355,9 @@
       else if( ( angle > 45 ) && ( angle < 135 ) ) return DOWN;
       else return UP;
     }
-    
     function comparePoints( pointA, pointB ){
       return ( pointA.x === pointB.x && pointA.y === pointB.y );
     }
-    
     function calculateAngle( startPoint, endPoint ){
       var x = startPoint.x - endPoint.x,
           y = endPoint.y - startPoint.y,
@@ -414,44 +369,86 @@
       
       return angle;
     }
-    
-    function calculateDistance( startPoint, endPoint ){
-      return Math.round( Math.sqrt( Math.pow( endPoint.x - startPoint.x, 2 ) + Math.pow( endPoint.y - startPoint.y, 2 ) ) );
-    }
-    
     function calculateCurrentDistance( startPoint, endPoint ){
       return {
         x: startPoint.x - endPoint.x,
         y: startPoint.y - endPoint.y
       }
     }
-    
     function calculateSpeed( distance, time ){
       return {
         x: distance.x / time,
         y: distance.y / time
       }
     }
-    
     function calculateDuration() {
       var duration;
       if( !startTime ) duration = 0;
       else duration = endTime - startTime;
       return duration;
     }
-    
     function removeListeners(){
       $( document ).off( '.vmswipe' );
       element.off( '.vmswipe' );
     }
+    function startSwipeTime(){
+      if( endTime )return;
+      startTime = getTimeStamp();
+    }
+    function isReallyFingerMoving(){
+      var currentTimeMobile = getTimeStamp(),
+          absDistance,
+          deltaTime;
     
+      if( !startTimeMobile ) startTimeMobile = currentTimeMobile;
+  
+      switch( swipeDirection ){
+        case 'horizontal':
+          absDistance = Math.abs( fingerData.end.x - fingerData.last.x );
+          break;
+  
+        case 'vertical':
+          absDistance = Math.abs( fingerData.end.y - fingerData.last.y );
+          break;
+  
+        case 'both':
+          absDistance = Math.max( Math.abs( fingerData.end.x - fingerData.last.x ), Math.abs( fingerData.end.y - fingerData.last.y ) );
+          break;
+      }
+      
+      deltaTime = currentTimeMobile - startTimeMobile;
+      return ( absDistance < 10 ) && ( deltaTime > 100 );
+    }
     function inertia(){
+      var absDistance;
+    
+      switch( swipeDirection ){
+        case 'horizontal':
+          absDistance = Math.abs( distance.x );
+          break;
+      
+        case 'vertical':
+          absDistance = Math.abs( distance.y );
+          break;
+      
+        case 'both':
+          absDistance = Math.max( Math.abs( distance.x ), Math.abs( distance.y ) );
+          break;
+      }
+      
+      var isTimeForInertia = ( endTime - endMoveTime ) < 50;
+      var isWidthForInertia = $( window ).width() <= options.inertiaMaxWidth;
+      var isDistanceForInertia = absDistance > options.inertiaThreshold;
+    
+      if( ( isTimeForInertia && !withoutInertia ) && isWidthForInertia && isDistanceForInertia ) getInertia();
+    }
+    function getInertia(){
       innerWrapper.css({'text-indent': 100});
       innerWrapper.animate({
         textIndent: 0
       },
       {
-        duration: ( Math.max( Math.abs( speed.x ), Math.abs( speed.y ) ) * 3000 ),
+        duration: ( Math.max( Math.abs( speed.x ), Math.abs( speed.y ) ) * 5000 ),
         step: function( currentStep ){
           var thisStepTime = getTimeStamp(),
               stepDuration = thisStepTime - endTime;
@@ -459,8 +456,6 @@
           endTime = thisStepTime;
           speed.x *= currentStep / 100;
           speed.y *= currentStep / 100;
-          
-          // getCurrentPosition();
   
           currentDistance.x = speed.x * stepDuration;
           currentDistance.y = speed.y * stepDuration;
@@ -469,10 +464,9 @@
         }
       });
     }
+    function calculateDistance( startPoint, endPoint ){
+      return Math.round( Math.sqrt( Math.pow( endPoint.x - startPoint.x, 2 ) + Math.pow( endPoint.y - startPoint.y, 2 ) ) );
+    }
   }
   
 })( jQuery );
-
-
-
-// Инерция
