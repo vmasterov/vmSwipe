@@ -1,0 +1,14 @@
+.vm-swipe {
+  width: 100%;
+  height: 100%;
+  overflow: hidden; }
+
+.vm-swipe.moving {
+  cursor: move; }
+
+.vm-swipe-inner {
+  position: relative;
+  overflow: hidden; }
+
+.vm-swipe-inner > * {
+  text-indent: 0; }
