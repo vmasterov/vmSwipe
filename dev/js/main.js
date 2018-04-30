@@ -11,7 +11,8 @@
   var defaults = {
     direction: 'horizontal',
     inertiaMaxWidth: 1030,
-    inertiaThreshold: 25
+    inertiaThreshold: 25,
+    activeElements: [ 'a' ]
   };
   
   $.fn.vmSwipe = function( method ){
@@ -128,12 +129,15 @@
     };
     
     function touchStart( event ){
+      // Check if this element matches any in the excluded elements selectors, or its parent is excluded, if so, DON'T swipe
+      if( isActiveElements( $( event.target ) ) ) return;
+  
       event.preventDefault();
       event = event.originalEvent ? event.originalEvent : event;
-      
+
       var touches = event.touches;
       event = touches ? touches[0] : event;
-  
+
       distance = 0;
       currentDistance = 0;
       direction = null;
@@ -144,14 +148,14 @@
       speed = {};
       withoutInertia = null;
       startTimeMobile = 0;
-  
+
       element.toggleClass( 'moving', event.type === 'mousedown');
-      
+
       getCurrentPosition();
       createFingerData( event );
-  
+
       innerWrapper.stop();
-      
+
       $( document ).on( 'touchend.vmswipe mouseup.vmswipe', $.proxy( touchEnd, element ) );
       $( document ).on( 'touchmove.vmswipe mousemove.vmswipe', $.proxy( touchMove, element ) );
     }
@@ -463,6 +467,12 @@
           changePosition( innerWrapper, currentDirection, currentDistance, position );
         }
       });
+    }
+    function isActiveElements( element ){
+      for( var i = 0, l = options.activeElements.length; i < l; i++ ){
+        if( element.closest( options.activeElements[i], innerWrapper ).length ) return true;
+      }
+      return false;
     }
     function calculateDistance( startPoint, endPoint ){
       return Math.round( Math.sqrt( Math.pow( endPoint.x - startPoint.x, 2 ) + Math.pow( endPoint.y - startPoint.y, 2 ) ) );

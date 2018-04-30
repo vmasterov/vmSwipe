@@ -20,28 +20,28 @@
   background-color: #BA4972; }
 
 .th01-h {
-  background-image: url("../img/h_01.jpg"); }
+  background-image: url("../img/h_1.jpg"); }
 
 .th02-h {
-  background-image: url("../img/h_02.jpg"); }
+  background-image: url("../img/h_2.jpg"); }
 
 .th03-h {
-  background-image: url("../img/h_03.jpg"); }
+  background-image: url("../img/h_3.jpg"); }
 
 .th04-h {
-  background-image: url("../img/h_04.jpg"); }
+  background-image: url("../img/h_4.jpg"); }
 
 .th01-v {
-  background-image: url("../img/v_01.jpg"); }
+  background-image: url("../img/v_1.jpg"); }
 
 .th02-v {
-  background-image: url("../img/v_02.jpg"); }
+  background-image: url("../img/v_2.jpg"); }
 
 .th03-v {
-  background-image: url("../img/v_03.jpg"); }
+  background-image: url("../img/v_3.jpg"); }
 
 .th04-v {
-  background-image: url("../img/v_04.jpg"); }
+  background-image: url("../img/v_4.jpg"); }
 
 .double-width.block {
   width: 1000px; }
@@ -69,7 +69,7 @@
   width: 604px;
   height: 436px;
   float: none;
-  background-image: url("../img/b_01.jpg"); }
+  background-image: url("../img/b_1.jpg"); }
   .both-swipe .block:last-child {
     margin-bottom: 0; }
 
