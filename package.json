@@ -26,7 +26,7 @@
     "url": "https://github.com/vmasterov/vmSwipe/issues"
   },
   "homepage": "https://github.com/vmasterov/vmSwipe#readme",
-  "dependencies": {
+  "devDependencies": {
     "del": "^2.2.1",
     "gulp": "^3.9.1",
     "gulp-cssnano": "^2.1.2",
