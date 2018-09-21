@@ -1,7 +1,7 @@
 {
   "name": "vm-swipe",
   "title": "vmSwipe",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "jQuery plugin for swipe HTML blocks",
   "keywords": [
     "touchSwipe",
