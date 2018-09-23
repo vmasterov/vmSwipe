@@ -4,3 +4,5 @@
 /node_modules
 todo.txt
 gulpfile.js
+/dev
+package.json
